@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Домовой</string>
+    <string name="moscow">Москва</string>
+    <string name="new_york">New York</string>
+    <string name="paris">Paris</string>
+    <string name="london">London</string>
+    <string name="time_format">HH:mm:ss</string>
+    <string name="date_format">dd.MM.yyyy</string>
+    <string name="costs_title">Затраты по приборам учета</string>
+    <string name="empty_costs_message">Нет данных для расчета затрат\nДобавьте показания для приборов учета</string>
+    <string name="period_costs_title">Затраты по периодам</string>
+    <string name="empty_period_costs_message">Нет данных о затратах по периодам\nДобавьте больше показаний</string>
+    <string name="consumption_label">Потребление</string>
+    <string name="tariff_label">Тариф</string>
+    <string name="cost_label">Стоимость</string>
+    <string name="address_filter_label">Фильтр по адресу</string>
+    <string name="address_filter_hint">Введите адрес для фильтрации</string>
+</resources>

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="680dp"
+    android:height="680dp"
+    android:viewportWidth="680"
+    android:viewportHeight="680">
+  
+  <!-- Небо - градиент от светло-голубого к белому -->
+  <path
+      android:fillColor="#E8F5E8"
+      android:pathData="M0,0L1080,0L1080,600L0,600z"/>
+  
+  <!-- Облака -->
+  <path
+      android:fillColor="#F0F8F0"
+      android:pathData="M200,100C150,80 100,100 100,150C80,140 60,150 60,180C60,200 80,220 100,220C120,240 150,240 180,220C200,240 230,240 250,220C270,200 270,180 250,160C270,140 250,120 220,120C200,100 200,100 200,100z"/>
+  
+  <path
+      android:fillColor="#F0F8F0"
+      android:pathData="M600,150C550,130 500,150 500,200C480,190 460,200 460,230C460,250 480,270 500,270C520,290 550,290 580,270C600,290 630,290 650,270C670,250 670,230 650,210C670,190 650,170 620,170C600,150 600,150 600,150z"/>
+  
+  <path
+      android:fillColor="#F0F8F0"
+      android:pathData="M800,80C750,60 700,80 700,130C680,120 660,130 660,160C660,180 680,200 700,200C720,220 750,220 780,200C800,220 830,220 850,200C870,180 870,160 850,140C870,120 850,100 820,100C800,80 800,80 800,80z"/>
+  
+  <!-- Горы на заднем плане -->
+  <path
+      android:fillColor="#B8E6B8"
+      android:pathData="M0,400L200,200L400,300L600,150L800,250L1000,100L1080,150L1080,600L0,600z"/>
+  
+  <!-- Лес на среднем плане -->
+  <path
+      android:fillColor="#A8D8A8"
+      android:pathData="M0,500L100,400L200,450L300,380L400,420L500,350L600,400L700,320L800,380L900,300L1000,350L1080,320L1080,600L0,600z"/>
+  
+  <!-- Деревья -->
+  <group>
+    <!-- Дерево 1 -->
+    <path
+        android:fillColor="#8FBC8F"
+        android:pathData="M150,500L150,580L160,580L160,500z"/>
+    <path
+        android:fillColor="#90EE90"
+        android:pathData="M130,500C130,480 140,460 155,460C170,460 180,480 180,500C180,520 170,540 155,540C140,540 130,520 130,500z"/>
+    
+    <!-- Дерево 2 -->
+    <path
+        android:fillColor="#8FBC8F"
+        android:pathData="M300,480L300,560L310,560L310,480z"/>
+    <path
+        android:fillColor="#90EE90"
+        android:pathData="M280,480C280,460 290,440 305,440C320,440 330,460 330,480C330,500 320,520 305,520C290,520 280,500 280,480z"/>
+    
+    <!-- Дерево 3 -->
+    <path
+        android:fillColor="#8FBC8F"
+        android:pathData="M450,520L450,600L460,600L460,520z"/>
+    <path
+        android:fillColor="#90EE90"
+        android:pathData="M430,520C430,500 440,480 455,480C470,480 480,500 480,520C480,540 470,560 455,560C440,560 430,540 430,520z"/>
+    
+    <!-- Дерево 4 -->
+    <path
+        android:fillColor="#8FBC8F"
+        android:pathData="M600,490L600,570L610,570L610,490z"/>
+    <path
+        android:fillColor="#90EE90"
+        android:pathData="M580,490C580,470 590,450 605,450C620,450 630,470 630,490C630,510 620,530 605,530C590,530 580,510 580,490z"/>
+    
+    <!-- Дерево 5 -->
+    <path
+        android:fillColor="#8FBC8F"
+        android:pathData="M750,510L750,590L760,590L760,510z"/>
+    <path
+        android:fillColor="#90EE90"
+        android:pathData="M730,510C730,490 740,470 755,470C770,470 780,490 780,510C780,530 770,550 755,550C740,550 730,530 730,510z"/>
+    
+    <!-- Дерево 6 -->
+    <path
+        android:fillColor="#8FBC8F"
+        android:pathData="M900,480L900,560L910,560L910,480z"/>
+    <path
+        android:fillColor="#90EE90"
+        android:pathData="M880,480C880,460 890,440 905,440C920,440 930,460 930,480C930,500 920,520 905,520C890,520 880,500 880,480z"/>
+  </group>
+  
+  <!-- Трава на переднем плане -->
+  <path
+      android:fillColor="#98FB98"
+      android:pathData="M0,600L0,800L1080,800L1080,600z"/>
+  
+  <!-- Детали травы -->
+  <path
+      android:fillColor="#90EE90"
+      android:pathData="M0,600L0,650L1080,650L1080,600z"/>
+  
+  <!-- Цветы и детали -->
+  <group>
+    <!-- Цветок 1 -->
+    <path
+        android:fillColor="#FFB6C1"
+        android:pathData="M200,750C195,745 195,735 200,730C205,725 215,725 220,730C225,735 225,745 220,750C215,755 205,755 200,750z"/>
+    <path
+        android:fillColor="#90EE90"
+        android:pathData="M200,750L200,780L205,780L205,750z"/>
+    
+    <!-- Цветок 2 -->
+    <path
+        android:fillColor="#FFB6C1"
+        android:pathData="M400,720C395,715 395,705 400,700C405,695 415,695 420,700C425,705 425,715 420,720C415,725 405,725 400,720z"/>
+    <path
+        android:fillColor="#90EE90"
+        android:pathData="M400,720L400,750L405,750L405,720z"/>
+    
+    <!-- Цветок 3 -->
+    <path
+        android:fillColor="#FFB6C1"
+        android:pathData="M600,740C595,735 595,725 600,720C605,715 615,715 620,720C625,725 625,735 620,740C615,745 605,745 600,740z"/>
+    <path
+        android:fillColor="#90EE90"
+        android:pathData="M600,740L600,770L605,770L605,740z"/>
+    
+    <!-- Цветок 4 -->
+    <path
+        android:fillColor="#FFB6C1"
+        android:pathData="M800,730C795,725 795,715 800,710C805,705 815,705 820,710C825,715 825,725 820,730C815,735 805,735 800,730z"/>
+    <path
+        android:fillColor="#90EE90"
+        android:pathData="M800,730L800,760L805,760L805,730z"/>
+  </group>
+  
+  <!-- Солнце -->
+  <path
+      android:fillColor="#FFE4B5"
+      android:pathData="M900,200C900,150 940,110 990,110C1040,110 1080,150 1080,200C1080,250 1040,290 990,290C940,290 900,250 900,200z"/>
+  
+  <!-- Солнечные лучи -->
+  <path
+      android:fillColor="#FFE4B5"
+      android:pathData="M990,110L990,80M1040,140L1060,120M1080,200L1110,200M1040,260L1060,280M990,290L990,320M940,260L920,280M900,200L870,200M940,140L920,120"/>
+  
+  <!-- Река -->
+  <path
+      android:fillColor="#B0E0E6"
+      android:pathData="M0,700C100,680 200,690 300,670 400,650 500,660 600,640 700,620 800,630 900,610 1000,590 1080,600 1080,600L1080,800L0,800z"/>
+  
+  <!-- Отражения в воде -->
+  <path
+      android:fillColor="#A0D0D6"
+      android:pathData="M0,750C100,740 200,745 300,735 400,725 500,730 600,720 700,710 800,715 900,705 1000,695 1080,700 1080,700L1080,800L0,800z"/>
+  
+</vector>

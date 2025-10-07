@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+  
+  <!-- Буква Д в стиле @ -->
+  <group android:scaleX="0.7"
+      android:scaleY="0.7"
+      android:translateX="16.2"
+      android:translateY="16.2">
+    
+    <!-- Основной круг (как в @) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,10C30.5,10 10,30.5 10,54s20.5,44 44,44s44,-20.5 44,-44S77.5,10 54,10zM54,90c-19.9,0 -36,-16.1 -36,-36s16.1,-36 36,-36s36,16.1 36,36S73.9,90 54,90z"/>
+    
+    <!-- Внутренний круг (как в @) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,20c-18.8,0 -34,15.2 -34,34s15.2,34 34,34s34,-15.2 34,-34S72.8,20 54,20zM54,80c-14.4,0 -26,-11.6 -26,-26s11.6,-26 26,-26s26,11.6 26,26S68.4,80 54,80z"/>
+    
+    <!-- Буква Д - основная вертикальная часть -->
+    <path
+        android:fillColor="#FF6B35"
+        android:pathData="M48,25L48,75L60,75L60,25L48,25z"/>
+    
+    <!-- Буква Д - верхняя горизонтальная линия -->
+    <path
+        android:fillColor="#FF6B35"
+        android:pathData="M32,25L76,25L76,35L32,35L32,25z"/>
+    
+    <!-- Буква Д - диагональная линия (соединяет верхнюю линию с вертикальной) -->
+    <path
+        android:fillColor="#FF6B35"
+        android:pathData="M32,35L48,50L32,35z"/>
+    
+    <!-- Буква Д - нижняя горизонтальная линия -->
+    <path
+        android:fillColor="#FF6B35"
+        android:pathData="M48,65L76,65L76,75L48,75L48,65z"/>
+    
+    <!-- Декоративные элементы в стиле @ -->
+    <!-- Маленький кружок (как точка в @) -->
+    <path
+        android:fillColor="#FF6B35"
+        android:pathData="M72,20c0,-2.2 1.8,-4 4,-4s4,1.8 4,4s-1.8,4 -4,4S72,22.2 72,20z"/>
+    
+    <!-- Волнистая линия (как в @) -->
+    <path
+        android:fillColor="#FF6B35"
+        android:pathData="M20,75Q30,65 40,75T60,75T80,75"
+        android:strokeWidth="4"
+        android:fillType="evenOdd"/>
+    
+  </group>
+</vector>
