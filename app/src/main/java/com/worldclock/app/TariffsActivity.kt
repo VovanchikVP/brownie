@@ -17,6 +17,7 @@ import com.google.android.material.textfield.TextInputLayout
 import com.worldclock.app.data.*
 import com.worldclock.app.databinding.ActivityTariffsBinding
 import com.worldclock.app.databinding.DialogAddTariffBinding
+import com.worldclock.app.databinding.DialogEditTariffEndDateBinding
 import com.worldclock.app.ui.TariffAdapter
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -55,7 +56,8 @@ class TariffsActivity : AppCompatActivity() {
     private fun setupRecyclerView() {
         adapter = TariffAdapter(
             tariffs = emptyList(),
-            onDeleteClick = { tariff -> showDeleteConfirmation(tariff) }
+            onDeleteClick = { tariff -> showDeleteConfirmation(tariff) },
+            onItemClick = { tariff -> showEditTariffEndDateDialog(tariff) }
         )
         
         binding.recyclerViewTariffs.layoutManager = LinearLayoutManager(this)
@@ -275,6 +277,115 @@ class TariffsActivity : AppCompatActivity() {
                 Toast.makeText(this@TariffsActivity, "Тариф удален", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
                 Toast.makeText(this@TariffsActivity, "Ошибка при удалении: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+    
+    private fun showEditTariffEndDateDialog(tariff: Tariff) {
+        val dialogBinding = DialogEditTariffEndDateBinding.inflate(LayoutInflater.from(this))
+        
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogBinding.root)
+            .create()
+        
+        // Находим информацию о приборе учета
+        val meter = meters.find { it.id == tariff.meterId }
+        val meterInfo = if (meter != null) {
+            "${meter.number} - ${meter.type.displayName}"
+        } else {
+            "Неизвестный прибор"
+        }
+        
+        // Заполняем информацию о тарифе
+        dialogBinding.textViewTariffInfo.text = meterInfo
+        dialogBinding.textViewCurrentRate.text = "${tariff.rate} ₽"
+        dialogBinding.textViewStartDate.text = dateFormat.format(Date(tariff.startDate))
+        
+        // Устанавливаем текущую дату окончания, если есть
+        if (tariff.endDate != null) {
+            dialogBinding.editTextEndDate.setText(dateFormat.format(Date(tariff.endDate)))
+        }
+        
+        // Настраиваем выбор даты окончания
+        setupEndDatePicker(dialogBinding.editTextEndDate)
+        
+        // Настраиваем чекбокс для удаления даты окончания
+        setupRemoveEndDateCheckbox(dialogBinding)
+        
+        dialogBinding.buttonCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+        
+        dialogBinding.buttonSave.setOnClickListener {
+            if (validateEditInput(dialogBinding)) {
+                saveTariffEndDate(tariff, dialogBinding)
+                dialog.dismiss()
+            }
+        }
+        
+        dialog.show()
+    }
+    
+    private fun setupEndDatePicker(editText: TextInputEditText) {
+        val calendar = Calendar.getInstance()
+        
+        editText.setOnClickListener {
+            DatePickerDialog(
+                this,
+                { _, year, month, dayOfMonth ->
+                    calendar.set(year, month, dayOfMonth)
+                    editText.setText(dateFormat.format(calendar.time))
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            ).show()
+        }
+    }
+    
+    private fun setupRemoveEndDateCheckbox(binding: DialogEditTariffEndDateBinding) {
+        binding.checkboxRemoveEndDate.setOnCheckedChangeListener { _, isChecked ->
+            binding.editTextEndDate.isEnabled = !isChecked
+            if (isChecked) {
+                binding.editTextEndDate.setText("")
+            }
+        }
+    }
+    
+    private fun validateEditInput(binding: DialogEditTariffEndDateBinding): Boolean {
+        val endDateText = binding.editTextEndDate.text.toString().trim()
+        val removeEndDate = binding.checkboxRemoveEndDate.isChecked
+        
+        if (!removeEndDate && endDateText.isEmpty()) {
+            binding.editTextEndDate.error = "Выберите дату окончания или отметьте чекбокс"
+            return false
+        }
+        
+        return true
+    }
+    
+    private fun saveTariffEndDate(tariff: Tariff, binding: DialogEditTariffEndDateBinding) {
+        val endDateText = binding.editTextEndDate.text.toString().trim()
+        val removeEndDate = binding.checkboxRemoveEndDate.isChecked
+        
+        val endDate = if (removeEndDate) {
+            null
+        } else {
+            try {
+                dateFormat.parse(endDateText)?.time
+            } catch (e: Exception) {
+                null
+            }
+        }
+        
+        val updatedTariff = tariff.copy(endDate = endDate)
+        
+        lifecycleScope.launch {
+            try {
+                repository.updateTariff(updatedTariff)
+                Toast.makeText(this@TariffsActivity, "Тариф обновлен", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Toast.makeText(this@TariffsActivity, "Ошибка при обновлении: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }

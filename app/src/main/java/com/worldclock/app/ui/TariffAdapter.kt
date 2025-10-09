@@ -14,7 +14,8 @@ import java.util.*
 
 class TariffAdapter(
     private var tariffs: List<TariffWithMeter>,
-    private val onDeleteClick: (Tariff) -> Unit
+    private val onDeleteClick: (Tariff) -> Unit,
+    private val onItemClick: (Tariff) -> Unit = {}
 ) : RecyclerView.Adapter<TariffAdapter.TariffViewHolder>() {
 
     data class TariffWithMeter(
@@ -70,6 +71,11 @@ class TariffAdapter(
         // Обработчик нажатия на кнопку удаления
         holder.buttonDeleteTariff.setOnClickListener {
             onDeleteClick(tariff)
+        }
+        
+        // Обработчик нажатия на весь элемент тарифа
+        holder.itemView.setOnClickListener {
+            onItemClick(tariff)
         }
     }
 
