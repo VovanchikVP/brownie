@@ -54,4 +54,14 @@ DerivedData
 # Pods/.idea
 .idea
 
+# Work reports directory
+work_reports/
+
+# Keystore files
+app/keystore.properties
+app/keystore/
+
+# Release files
+release/
+
 gradle-8.5/
