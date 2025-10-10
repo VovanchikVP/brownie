@@ -28,7 +28,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:hint="Выберите прибор учета"
-        app:startIconDrawable="@drawable/ic_meter"
+        app:startIconDrawable="@drawable/ic_dialog_meter"
         app:endIconMode="dropdown_menu"
         app:endIconDrawable="@drawable/ic_dropdown">
 
@@ -37,6 +37,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="none"
+            android:paddingStart="50dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
             android:focusable="false" />
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -52,6 +56,8 @@
             android:id="@+id/editTextTariffRate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingStart="50dp"
+            android:paddingEnd="12dp"
             android:inputType="numberDecimal" />
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -76,6 +82,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="none"
+            android:paddingStart="50dp"
+            android:paddingEnd="12dp"
             android:focusable="false" />
 
     </com.google.android.material.textfield.TextInputLayout>
