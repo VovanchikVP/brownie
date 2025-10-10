@@ -11,7 +11,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.worldclock.app.data.*
 import com.worldclock.app.databinding.ActivityMainBinding
 import com.worldclock.app.databinding.DialogMenuBinding
-import com.worldclock.app.ui.CostAdapter
+import com.worldclock.app.ui.AddressCostAdapter
+import com.worldclock.app.ui.AddressCostItem
 import com.worldclock.app.ui.CostItem
 import kotlinx.coroutines.launch
 
@@ -22,7 +23,7 @@ class MainActivity : AppCompatActivity() {
     // Database для управления приборами учета
     private lateinit var database: AppDatabase
     private lateinit var repository: MeterRepository
-    private lateinit var costAdapter: CostAdapter
+    private lateinit var addressCostAdapter: AddressCostAdapter
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,18 +56,15 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun setupCostsRecyclerView() {
-        costAdapter = CostAdapter { costItem ->
-            // Переходим к экрану затрат по периодам
-            val intent = Intent(this, MeterCostsActivity::class.java).apply {
-                putExtra("meter_id", costItem.meterId)
-                putExtra("meter_number", costItem.meterNumber)
-                putExtra("meter_address", costItem.meterAddress)
-                putExtra("meter_type", costItem.meterType.name)
+        addressCostAdapter = AddressCostAdapter { addressCostItem ->
+            // Переходим к экрану детализации затрат по адресу
+            val intent = Intent(this, AddressCostsActivity::class.java).apply {
+                putExtra("address", addressCostItem.address)
             }
             startActivity(intent)
         }
         binding.recyclerViewCosts.layoutManager = LinearLayoutManager(this)
-        binding.recyclerViewCosts.adapter = costAdapter
+        binding.recyclerViewCosts.adapter = addressCostAdapter
     }
     
     private fun setupClickListeners() {
@@ -246,14 +244,31 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                     
+                    // Группируем по адресам
+                    val addressCosts = groupCostsByAddress(costItems)
+                    
                     // Обновляем UI
-                    costAdapter.updateCosts(costItems)
-                    updateEmptyState(costItems.isEmpty())
+                    addressCostAdapter.updateAddressCosts(addressCosts)
+                    updateEmptyState(addressCosts.isEmpty())
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
+    }
+    
+    private fun groupCostsByAddress(costItems: List<CostItem>): List<AddressCostItem> {
+        val groupedByAddress = costItems.groupBy { it.meterAddress }
+        
+        return groupedByAddress.map { (address, costs) ->
+            val totalCost = costs.sumOf { it.cost }
+            AddressCostItem(
+                address = address,
+                totalCost = totalCost,
+                metersCount = costs.size,
+                meters = costs
+            )
+        }.sortedByDescending { it.totalCost }
     }
     
     private fun updateEmptyState(isEmpty: Boolean) {

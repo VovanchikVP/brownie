@@ -41,6 +41,11 @@
             android:name=".MeterCostsActivity"
             android:exported="false"
             android:theme="@style/Theme.WorldClock" />
+        
+        <activity
+            android:name=".AddressCostsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.WorldClock" />
     </application>
 
 </manifest>
