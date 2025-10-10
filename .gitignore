@@ -53,3 +53,5 @@ DerivedData
 #
 # Pods/.idea
 .idea
+
+gradle-8.5/
