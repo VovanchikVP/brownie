@@ -34,17 +34,15 @@
             android:textSize="28sp"
             android:textStyle="bold" />
 
+        <!-- Кнопка меню -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/menuButton"
-            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Меню"
-            android:textColor="@color/primary_blue"
-            android:drawableEnd="@drawable/ic_dropdown"
-            app:icon="@drawable/ic_dropdown"
-            app:iconGravity="end"
-            app:iconPadding="8dp" />
+            android:backgroundTint="@color/primary_blue"
+            app:icon="@drawable/ic_menu"
+            app:iconGravity="textStart" />
 
     </LinearLayout>
 

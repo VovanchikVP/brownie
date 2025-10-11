@@ -42,6 +42,27 @@ class TariffsActivity : AppCompatActivity() {
         setupRecyclerView()
         setupClickListeners()
         loadTariffs()
+        
+        // Проверяем, пришли ли параметры от MetersActivity
+        val meterId = intent.getLongExtra("meterId", -1L)
+        val meterNumber = intent.getStringExtra("meterNumber")
+        
+        if (meterId != -1L && meterNumber != null) {
+            // Показываем диалог добавления тарифа с предзаполненным прибором
+            lifecycleScope.launch {
+                try {
+                    // Загружаем приборы напрямую
+                    val meterList = repository.getAllMetersSync()
+                    meters = meterList
+                    val meter = meterList.find { it.id == meterId }
+                    if (meter != null) {
+                        showAddTariffDialog(meter)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
     }
     
     private fun initializeDatabase() {
@@ -109,13 +130,17 @@ class TariffsActivity : AppCompatActivity() {
     }
     
     private fun showAddTariffDialog() {
+        showAddTariffDialog(null)
+    }
+    
+    private fun showAddTariffDialog(preSelectedMeter: Meter?) {
         val dialogBinding = DialogAddTariffBinding.inflate(LayoutInflater.from(this))
         
         val dialog = AlertDialog.Builder(this)
             .setView(dialogBinding.root)
             .create()
         
-        setupMeterDropdown(dialogBinding.autoCompleteMeter)
+        setupMeterDropdown(dialogBinding.autoCompleteMeter, preSelectedMeter)
         setupDatePickers(dialogBinding, dialog)
         setupCheckboxListener(dialogBinding)
         
@@ -133,10 +158,16 @@ class TariffsActivity : AppCompatActivity() {
         dialog.show()
     }
     
-    private fun setupMeterDropdown(autoComplete: AutoCompleteTextView) {
+    private fun setupMeterDropdown(autoComplete: AutoCompleteTextView, preSelectedMeter: Meter? = null) {
         val meterOptions = meters.map { "${it.number} (${it.type.displayName})" }
         val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, meterOptions)
         autoComplete.setAdapter(adapter)
+        
+        // Если передан предзаполненный прибор, устанавливаем его
+        if (preSelectedMeter != null) {
+            val selectedText = "${preSelectedMeter.number} (${preSelectedMeter.type.displayName})"
+            autoComplete.setText(selectedText, false)
+        }
     }
     
     private fun setupDatePickers(binding: DialogAddTariffBinding, dialog: AlertDialog) {

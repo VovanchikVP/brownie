@@ -9,6 +9,9 @@ interface MeterDao {
     @Query("SELECT * FROM meters ORDER BY type, number")
     fun getAllMeters(): Flow<List<Meter>>
     
+    @Query("SELECT * FROM meters ORDER BY type, number")
+    suspend fun getAllMetersSync(): List<Meter>
+    
     @Query("SELECT * FROM meters WHERE id = :id")
     suspend fun getMeterById(id: Long): Meter?
     

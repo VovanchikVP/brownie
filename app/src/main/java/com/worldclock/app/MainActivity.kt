@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.worldclock.app.data.*
 import com.worldclock.app.databinding.ActivityMainBinding
 import com.worldclock.app.databinding.DialogMenuBinding
+import com.worldclock.app.tutorial.TutorialManager
 import com.worldclock.app.ui.AddressCostAdapter
 import com.worldclock.app.ui.AddressCostItem
 import com.worldclock.app.ui.CostItem
@@ -25,6 +26,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var repository: MeterRepository
     private lateinit var addressCostAdapter: AddressCostAdapter
     
+    // Tutorial manager
+    private lateinit var tutorialManager: TutorialManager
+    
+    // Состояние для отслеживания наличия приборов
+    private var hasMeters = false
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -32,6 +39,9 @@ class MainActivity : AppCompatActivity() {
         
         // Инициализация базы данных
         initializeDatabase()
+        
+        // Инициализация tutorial manager
+        tutorialManager = TutorialManager(this)
         
         // Настройка RecyclerView для затрат
         setupCostsRecyclerView()
@@ -41,6 +51,9 @@ class MainActivity : AppCompatActivity() {
         
         // Загружаем затраты
         loadCosts()
+        
+        // Проверяем, нужно ли показать обучение
+        checkTutorial()
     }
     
     private fun initializeDatabase() {
@@ -51,8 +64,7 @@ class MainActivity : AppCompatActivity() {
             database.tariffDao()
         )
         
-        // Добавляем тестовые данные
-        addSampleData()
+        // База данных инициализирована без тестовых данных
     }
     
     private fun setupCostsRecyclerView() {
@@ -101,117 +113,15 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
     
-    private fun addSampleData() {
-        lifecycleScope.launch {
-            try {
-                // Проверяем, есть ли уже данные
-                val existingMeters = repository.getAllMeters()
-                existingMeters.collect { meters ->
-                    if (meters.isEmpty()) {
-                        // Добавляем приборы учета с разными адресами
-                        val electricityMeterId = repository.insertMeter(
-                            Meter(
-                                number = "EL-001-2024",
-                                address = "ул. Ленина, д. 10, кв. 5",
-                                type = MeterType.ELECTRICITY
-                            )
-                        )
-                        
-                        val gasMeterId = repository.insertMeter(
-                            Meter(
-                                number = "GAS-002-2024",
-                                address = "ул. Ленина, д. 10, кв. 5",
-                                type = MeterType.GAS
-                            )
-                        )
-                        
-                        val hotWaterMeterId = repository.insertMeter(
-                            Meter(
-                                number = "HW-003-2024",
-                                address = "ул. Пушкина, д. 25, кв. 12",
-                                type = MeterType.HOT_WATER
-                            )
-                        )
-                        
-                        val coldWaterMeterId = repository.insertMeter(
-                            Meter(
-                                number = "CW-004-2024",
-                                address = "ул. Пушкина, д. 25, кв. 12",
-                                type = MeterType.COLD_WATER
-                            )
-                        )
-                        
-                        // Добавляем дополнительные приборы для демонстрации фильтра
-                        val additionalElectricityMeterId = repository.insertMeter(
-                            Meter(
-                                number = "EL-005-2024",
-                                address = "пр. Мира, д. 15, кв. 8",
-                                type = MeterType.ELECTRICITY
-                            )
-                        )
-                        
-                        val additionalGasMeterId = repository.insertMeter(
-                            Meter(
-                                number = "GAS-006-2024",
-                                address = "ул. Советская, д. 3, кв. 1",
-                                type = MeterType.GAS
-                            )
-                        )
-                        
-                        // Добавляем показания (текущие и предыдущие для расчета)
-                        val currentTime = System.currentTimeMillis()
-                        val previousTime = currentTime - (30L * 24 * 60 * 60 * 1000) // 30 дней назад
-                        val olderTime = previousTime - (30L * 24 * 60 * 60 * 1000) // 60 дней назад
-                        
-                        // Электричество - добавляем 3 показания для демонстрации периодов
-                        repository.insertReading(Reading(meterId = electricityMeterId, value = 1150.0, date = olderTime))
-                        repository.insertReading(Reading(meterId = electricityMeterId, value = 1200.0, date = previousTime))
-                        repository.insertReading(Reading(meterId = electricityMeterId, value = 1250.5, date = currentTime))
-                        
-                        // Газ - добавляем 3 показания
-                        repository.insertReading(Reading(meterId = gasMeterId, value = 750.0, date = olderTime))
-                        repository.insertReading(Reading(meterId = gasMeterId, value = 800.0, date = previousTime))
-                        repository.insertReading(Reading(meterId = gasMeterId, value = 850.2, date = currentTime))
-                        
-                        // Горячая вода - добавляем 3 показания
-                        repository.insertReading(Reading(meterId = hotWaterMeterId, value = 80.0, date = olderTime))
-                        repository.insertReading(Reading(meterId = hotWaterMeterId, value = 100.0, date = previousTime))
-                        repository.insertReading(Reading(meterId = hotWaterMeterId, value = 120.8, date = currentTime))
-                        
-                        // Холодная вода - добавляем 3 показания
-                        repository.insertReading(Reading(meterId = coldWaterMeterId, value = 60.0, date = olderTime))
-                        repository.insertReading(Reading(meterId = coldWaterMeterId, value = 80.0, date = previousTime))
-                        repository.insertReading(Reading(meterId = coldWaterMeterId, value = 95.3, date = currentTime))
-                        
-                        // Дополнительные приборы - добавляем показания
-                        repository.insertReading(Reading(meterId = additionalElectricityMeterId, value = 2000.0, date = previousTime))
-                        repository.insertReading(Reading(meterId = additionalElectricityMeterId, value = 2100.5, date = currentTime))
-                        
-                        repository.insertReading(Reading(meterId = additionalGasMeterId, value = 500.0, date = previousTime))
-                        repository.insertReading(Reading(meterId = additionalGasMeterId, value = 550.2, date = currentTime))
-                        
-                        // Добавляем тарифы
-                        val tariffStartDate = previousTime
-                        repository.insertTariff(Tariff(meterId = electricityMeterId, rate = 4.5, startDate = tariffStartDate, endDate = null))
-                        repository.insertTariff(Tariff(meterId = gasMeterId, rate = 6.2, startDate = tariffStartDate, endDate = null))
-                        repository.insertTariff(Tariff(meterId = hotWaterMeterId, rate = 180.0, startDate = tariffStartDate, endDate = null))
-                        repository.insertTariff(Tariff(meterId = coldWaterMeterId, rate = 45.0, startDate = tariffStartDate, endDate = null))
-                        repository.insertTariff(Tariff(meterId = additionalElectricityMeterId, rate = 4.5, startDate = tariffStartDate, endDate = null))
-                        repository.insertTariff(Tariff(meterId = additionalGasMeterId, rate = 6.2, startDate = tariffStartDate, endDate = null))
-                    }
-                }
-                
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
     
     private fun loadCosts() {
         lifecycleScope.launch {
             try {
                 val meters = repository.getAllMeters()
                 meters.collect { meterList ->
+                    // Обновляем состояние наличия приборов
+                    hasMeters = meterList.isNotEmpty()
+                    
                     val costItems = mutableListOf<CostItem>()
                     
                     for (meter in meterList) {
@@ -248,6 +158,7 @@ class MainActivity : AppCompatActivity() {
                     val addressCosts = groupCostsByAddress(costItems)
                     
                     // Обновляем UI
+                    updateNoMetersNotification()
                     addressCostAdapter.updateAddressCosts(addressCosts)
                     updateEmptyState(addressCosts.isEmpty())
                 }
@@ -272,13 +183,54 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun updateEmptyState(isEmpty: Boolean) {
-        binding.emptyStateText.visibility = if (isEmpty) View.VISIBLE else View.GONE
-        binding.recyclerViewCosts.visibility = if (isEmpty) View.GONE else View.VISIBLE
+        // Если нет приборов, показываем уведомление в RecyclerView, а не пустое состояние
+        if (!hasMeters) {
+            binding.emptyStateText.visibility = View.GONE
+            binding.recyclerViewCosts.visibility = View.VISIBLE
+        } else {
+            binding.emptyStateText.visibility = if (isEmpty) View.VISIBLE else View.GONE
+            binding.recyclerViewCosts.visibility = if (isEmpty) View.GONE else View.VISIBLE
+        }
+    }
+    
+    private fun updateNoMetersNotification() {
+        if (!hasMeters) {
+            showNoMetersNotification()
+        } else {
+            hideNoMetersNotification()
+        }
+    }
+    
+    private fun showNoMetersNotification() {
+        // Создаем уведомление
+        val notificationView = LayoutInflater.from(this).inflate(R.layout.item_no_meters_simple, null)
+        
+        // Добавляем уведомление в RecyclerView
+        addressCostAdapter.addNotificationItem(notificationView)
+    }
+    
+    private fun hideNoMetersNotification() {
+        // Убираем уведомление
+        addressCostAdapter.removeNotificationItem()
     }
     
     override fun onResume() {
         super.onResume()
         // Обновляем затраты при возвращении на экран
         loadCosts()
+    }
+    
+    private fun checkTutorial() {
+        if (!tutorialManager.isTutorialCompleted()) {
+            // Небольшая задержка, чтобы UI успел загрузиться
+            binding.root.post {
+                tutorialManager.startTutorial()
+            }
+        }
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        tutorialManager.hideTutorial()
     }
 }

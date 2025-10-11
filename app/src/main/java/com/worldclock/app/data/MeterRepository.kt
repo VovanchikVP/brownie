@@ -11,6 +11,8 @@ class MeterRepository(
     // Meters
     fun getAllMeters(): Flow<List<Meter>> = meterDao.getAllMeters()
     
+    suspend fun getAllMetersSync(): List<Meter> = meterDao.getAllMetersSync()
+    
     suspend fun getMeterById(id: Long): Meter? = meterDao.getMeterById(id)
     
     fun getMetersByType(type: MeterType): Flow<List<Meter>> = meterDao.getMetersByType(type)
