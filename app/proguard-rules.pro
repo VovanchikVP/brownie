@@ -96,3 +96,36 @@
 
 # Keep AndroidX components
 -keep class androidx.** { *; }
+
+# Security rules - prevent data leakage
+-keepclassmembers class * {
+    @androidx.annotation.Keep *;
+}
+
+# Remove debug information in release builds
+-assumenosideeffects class android.util.Log {
+    public static boolean isLoggable(java.lang.String, int);
+    public static int v(...);
+    public static int i(...);
+    public static int w(...);
+    public static int d(...);
+    public static int e(...);
+}
+
+# Remove System.out.println in release builds
+-assumenosideeffects class java.io.PrintStream {
+    public void println(%);
+    public void println(**);
+}
+
+# Obfuscate class names for better security
+-repackageclasses ''
+-allowaccessmodification
+-optimizations !code/simplification/arithmetic
+
+# Keep only necessary classes for Room database
+-keep class com.worldclock.app.data.AppDatabase
+-keep class com.worldclock.app.data.Meter
+-keep class com.worldclock.app.data.Reading  
+-keep class com.worldclock.app.data.Tariff
+-keep class com.worldclock.app.data.MeterType
