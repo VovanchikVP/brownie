@@ -202,8 +202,18 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun showNoMetersNotification() {
-        // Создаем уведомление
-        val notificationView = LayoutInflater.from(this).inflate(R.layout.item_no_meters_simple, null)
+        // Создаем уведомление без parent для полного контроля над layout
+        val notificationView = LayoutInflater.from(this).inflate(R.layout.item_no_meters_full_width, null)
+        
+        // Настраиваем обработчик для кнопки "Открыть меню"
+        val buttonOpenMenu = notificationView.findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonOpenMenu)
+        buttonOpenMenu.setOnClickListener {
+            // Переходим на экран управления приборами и сразу открываем диалог добавления
+            val intent = Intent(this, MetersActivity::class.java).apply {
+                putExtra("open_add_dialog", true)
+            }
+            startActivity(intent)
+        }
         
         // Добавляем уведомление в RecyclerView
         addressCostAdapter.addNotificationItem(notificationView)

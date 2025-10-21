@@ -2,6 +2,7 @@ package com.worldclock.app.data
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
@@ -13,7 +14,8 @@ import androidx.room.PrimaryKey
             childColumns = ["meterId"],
             onDelete = ForeignKey.CASCADE
         )
-    ]
+    ],
+    indices = [Index(value = ["meterId"])]
 )
 data class Tariff(
     @PrimaryKey(autoGenerate = true)

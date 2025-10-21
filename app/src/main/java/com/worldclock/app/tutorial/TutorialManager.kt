@@ -59,7 +59,7 @@ class TutorialManager(private val activity: Activity) {
                 step = STEP_VIEW_MAIN,
                 message = "Вернемся на главную страницу и посмотрим результат.\n\nЗдесь вы увидите сгруппированные затраты по адресам установки приборов.",
                 showArrow = true,
-                targetViewId = R.id.appNameText
+                targetViewId = R.id.imageViewBackButton
             ),
             TutorialStep(
                 step = STEP_CLICK_ADDRESS,

@@ -47,6 +47,15 @@ class MetersActivity : AppCompatActivity() {
         setupRecyclerView()
         setupClickListeners()
         loadMeters()
+        
+        // Проверяем, нужно ли автоматически открыть диалог добавления прибора
+        val shouldOpenAddDialog = intent.getBooleanExtra("open_add_dialog", false)
+        if (shouldOpenAddDialog) {
+            // Небольшая задержка, чтобы UI успел загрузиться
+            binding.root.post {
+                showAddMeterDialog()
+            }
+        }
     }
     
     private fun initializeDatabase() {
@@ -73,7 +82,7 @@ class MetersActivity : AppCompatActivity() {
             showAddMeterDialog()
         }
         
-        binding.appNameText.setOnClickListener {
+        binding.imageViewBackButton.setOnClickListener {
             // Возвращаемся на главную страницу
             finish()
         }
@@ -258,6 +267,7 @@ class MetersActivity : AppCompatActivity() {
         autoComplete.setText(selectedText, false)
     }
     
+    @Suppress("UNUSED_PARAMETER")
     private fun setupDatePickers(binding: DialogAddTariffBinding, dialog: AlertDialog) {
         val calendar = Calendar.getInstance()
         

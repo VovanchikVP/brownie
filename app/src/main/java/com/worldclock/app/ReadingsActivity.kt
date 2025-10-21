@@ -72,7 +72,7 @@ class ReadingsActivity : AppCompatActivity() {
             showAddReadingDialog()
         }
         
-        binding.appNameText.setOnClickListener {
+        binding.imageViewBackButton.setOnClickListener {
             // Возвращаемся на главную страницу
             finish()
         }

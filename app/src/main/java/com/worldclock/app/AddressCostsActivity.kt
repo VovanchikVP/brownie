@@ -73,7 +73,7 @@ class AddressCostsActivity : AppCompatActivity() {
     }
     
     private fun setupClickListeners() {
-        binding.appNameText.setOnClickListener {
+        binding.imageViewBackButton.setOnClickListener {
             // Возвращаемся на главную страницу
             finish()
         }

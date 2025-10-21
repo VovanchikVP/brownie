@@ -40,6 +40,12 @@ class AddressCostAdapter(
         return when (viewType) {
             TYPE_NOTIFICATION -> {
                 val view = notificationView ?: throw IllegalStateException("Notification view not set")
+                // Устанавливаем match_parent для уведомления
+                val layoutParams = RecyclerView.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+                view.layoutParams = layoutParams
                 object : RecyclerView.ViewHolder(view) {}
             }
             TYPE_ADDRESS_COST -> {

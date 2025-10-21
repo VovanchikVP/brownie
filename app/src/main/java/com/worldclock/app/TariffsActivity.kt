@@ -90,7 +90,7 @@ class TariffsActivity : AppCompatActivity() {
             showAddTariffDialog()
         }
         
-        binding.appNameText.setOnClickListener {
+        binding.imageViewBackButton.setOnClickListener {
             // Возвращаемся на главную страницу
             finish()
         }
@@ -170,6 +170,7 @@ class TariffsActivity : AppCompatActivity() {
         }
     }
     
+    @Suppress("UNUSED_PARAMETER")
     private fun setupDatePickers(binding: DialogAddTariffBinding, dialog: AlertDialog) {
         val calendar = Calendar.getInstance()
         
