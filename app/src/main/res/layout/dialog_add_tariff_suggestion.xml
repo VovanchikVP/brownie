@@ -84,7 +84,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_weight="1"
-            android:text="Добавить тариф" />
+            android:backgroundTint="@color/primary_blue"
+            android:text="Добавить"/>
 
     </LinearLayout>
 

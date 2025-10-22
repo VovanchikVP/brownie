@@ -1,21 +1,32 @@
 package com.worldclock.app
 
 import android.app.AlertDialog
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.textfield.TextInputEditText
 import com.worldclock.app.data.*
 import com.worldclock.app.databinding.ActivityMainBinding
+import com.worldclock.app.databinding.DialogAddReadingBinding
 import com.worldclock.app.databinding.DialogMenuBinding
 import com.worldclock.app.tutorial.TutorialManager
 import com.worldclock.app.ui.AddressCostAdapter
 import com.worldclock.app.ui.AddressCostItem
 import com.worldclock.app.ui.CostItem
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
     
@@ -31,6 +42,15 @@ class MainActivity : AppCompatActivity() {
     
     // Состояние для отслеживания наличия приборов
     private var hasMeters = false
+    
+    // Для диалога добавления показаний
+    private var meters: List<Meter> = emptyList()
+    private var filteredMeters: List<Meter> = emptyList()
+    private var meterAdapter: ArrayAdapter<String>? = null
+    
+    private val dateTimeFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+    private val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+    private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,6 +103,10 @@ class MainActivity : AppCompatActivity() {
         binding.menuButton.setOnClickListener {
             showMenu()
         }
+        
+        binding.fabAddReading.setOnClickListener {
+            showAddReadingDialog()
+        }
     }
     
     private fun showMenu() {
@@ -117,10 +141,13 @@ class MainActivity : AppCompatActivity() {
     private fun loadCosts() {
         lifecycleScope.launch {
             try {
-                val meters = repository.getAllMeters()
-                meters.collect { meterList ->
-                    // Обновляем состояние наличия приборов
-                    hasMeters = meterList.isNotEmpty()
+                    val meters = repository.getAllMeters()
+                    meters.collect { meterList ->
+                        // Обновляем состояние наличия приборов
+                        hasMeters = meterList.isNotEmpty()
+                        
+                        // Сохраняем список приборов для диалога
+                        this@MainActivity.meters = meterList
                     
                     val costItems = mutableListOf<CostItem>()
                     
@@ -239,6 +266,181 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
+    private fun showAddReadingDialog() {
+        val dialogBinding = DialogAddReadingBinding.inflate(LayoutInflater.from(this))
+        
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogBinding.root)
+            .create()
+        
+        setupMeterDropdown(dialogBinding.autoCompleteMeter)
+        setupAddressFilter(dialogBinding.editTextAddressFilter, dialogBinding.autoCompleteMeter)
+        
+        // Устанавливаем текущую дату и время по умолчанию
+        val currentDateTime = Calendar.getInstance()
+        dialogBinding.editTextReadingDate.setText(dateTimeFormat.format(currentDateTime.time))
+        
+        setupDateTimePicker(dialogBinding.editTextReadingDate)
+        
+        dialogBinding.buttonCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+        
+        dialogBinding.buttonSave.setOnClickListener {
+            if (validateInput(dialogBinding)) {
+                saveReading(dialogBinding)
+                dialog.dismiss()
+            }
+        }
+        
+        dialog.show()
+    }
+    
+    private fun setupMeterDropdown(autoComplete: AutoCompleteTextView) {
+        filteredMeters = meters
+        updateMeterDropdown(autoComplete)
+    }
+    
+    private fun updateMeterDropdown(autoComplete: AutoCompleteTextView) {
+        val meterOptions = filteredMeters.map { "${it.number} (${it.type.displayName}) - ${it.address}" }
+        meterAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, meterOptions)
+        autoComplete.setAdapter(meterAdapter)
+    }
+    
+    private fun setupAddressFilter(addressFilter: TextInputEditText, autoComplete: AutoCompleteTextView) {
+        addressFilter.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            
+            override fun afterTextChanged(s: Editable?) {
+                val filterText = s.toString().trim().lowercase()
+                
+                if (filterText.isEmpty()) {
+                    // Если фильтр пустой, показываем все приборы
+                    filteredMeters = meters
+                } else {
+                    // Фильтруем приборы по адресу
+                    filteredMeters = meters.filter { meter ->
+                        meter.address.lowercase().contains(filterText)
+                    }
+                }
+                
+                // Обновляем список приборов
+                updateMeterDropdown(autoComplete)
+                
+                // Очищаем выбранный прибор, если он больше не в списке
+                val currentSelection = autoComplete.text.toString()
+                val isCurrentSelectionValid = filteredMeters.any { meter ->
+                    "${meter.number} (${meter.type.displayName}) - ${meter.address}" == currentSelection
+                }
+                
+                if (!isCurrentSelectionValid && currentSelection.isNotEmpty()) {
+                    autoComplete.setText("")
+                }
+            }
+        })
+    }
+    
+    private fun setupDateTimePicker(editText: TextInputEditText) {
+        val calendar = Calendar.getInstance()
+        
+        editText.setOnClickListener {
+            // Сначала выбираем дату
+            DatePickerDialog(
+                this,
+                { _, year, month, dayOfMonth ->
+                    calendar.set(year, month, dayOfMonth)
+                    
+                    // Затем выбираем время
+                    TimePickerDialog(
+                        this,
+                        { _, hourOfDay, minute ->
+                            calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
+                            calendar.set(Calendar.MINUTE, minute)
+                            editText.setText(dateTimeFormat.format(calendar.time))
+                        },
+                        calendar.get(Calendar.HOUR_OF_DAY),
+                        calendar.get(Calendar.MINUTE),
+                        true
+                    ).show()
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            ).show()
+        }
+    }
+    
+    private fun validateInput(binding: DialogAddReadingBinding): Boolean {
+        val meterText = binding.autoCompleteMeter.text.toString().trim()
+        val valueText = binding.editTextReadingValue.text.toString().trim()
+        val dateText = binding.editTextReadingDate.text.toString().trim()
+        
+        if (meterText.isEmpty()) {
+            binding.autoCompleteMeter.error = "Выберите прибор учета"
+            return false
+        }
+        
+        if (valueText.isEmpty()) {
+            binding.editTextReadingValue.error = "Введите значение показания"
+            return false
+        }
+        
+        val value = valueText.toDoubleOrNull()
+        if (value == null || value < 0) {
+            binding.editTextReadingValue.error = "Введите корректное значение"
+            return false
+        }
+        
+        if (dateText.isEmpty()) {
+            binding.editTextReadingDate.error = "Выберите дату и время"
+            return false
+        }
+        
+        return true
+    }
+    
+    private fun saveReading(binding: DialogAddReadingBinding) {
+        val meterText = binding.autoCompleteMeter.text.toString().trim()
+        val value = binding.editTextReadingValue.text.toString().trim().toDouble()
+        val dateText = binding.editTextReadingDate.text.toString().trim()
+        
+        // Находим выбранный прибор учета
+        val selectedMeter = filteredMeters.find { meter ->
+            "${meter.number} (${meter.type.displayName}) - ${meter.address}" == meterText
+        }
+        
+        if (selectedMeter == null) {
+            Toast.makeText(this, "Ошибка: прибор учета не найден", Toast.LENGTH_LONG).show()
+            return
+        }
+        
+        // Парсим дату и время
+        val date = try {
+            dateTimeFormat.parse(dateText)?.time ?: System.currentTimeMillis()
+        } catch (e: Exception) {
+            System.currentTimeMillis()
+        }
+        
+        val reading = Reading(
+            meterId = selectedMeter.id,
+            value = value,
+            date = date
+        )
+        
+        lifecycleScope.launch {
+            try {
+                repository.insertReading(reading)
+                Toast.makeText(this@MainActivity, "Показание добавлено", Toast.LENGTH_SHORT).show()
+                // Обновляем затраты после добавления показания
+                loadCosts()
+            } catch (e: Exception) {
+                Toast.makeText(this@MainActivity, "Ошибка при добавлении: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         tutorialManager.hideTutorial()

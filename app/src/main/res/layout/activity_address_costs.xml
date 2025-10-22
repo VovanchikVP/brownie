@@ -14,12 +14,11 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:padding="8dp"
-        android:background="#80FFFFFF"
-        android:elevation="4dp"
+        android:background="@android:color/transparent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -86,9 +85,7 @@
         android:textStyle="bold"
         android:layout_marginTop="24dp"
         android:layout_marginStart="24dp"
-        android:background="#80FFFFFF"
-        android:padding="8dp"
-        android:elevation="4dp"
+        android:background="@android:color/transparent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/addressCard" />
 
