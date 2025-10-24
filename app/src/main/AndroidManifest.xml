@@ -9,7 +9,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WorldClock"
         android:usesCleartextTraffic="false"
-        android:extractNativeLibs="false"
         android:hardwareAccelerated="true"
         android:largeHeap="false">
         <activity

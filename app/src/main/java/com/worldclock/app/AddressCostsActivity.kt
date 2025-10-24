@@ -117,14 +117,23 @@ class AddressCostsActivity : AppCompatActivity() {
                         }
                     }
                     
+                    // Вычисляем общую сумму
+                    val totalSum = costItems.sumOf { it.cost }
+                    
                     // Обновляем UI
                     adapter.updateCosts(costItems)
+                    updateTotalSum(totalSum)
                     updateEmptyState(costItems.isEmpty())
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
+    }
+    
+    private fun updateTotalSum(totalSum: Double) {
+        val formattedSum = String.format("%.2f ₽", totalSum)
+        binding.textViewTotalSum.text = formattedSum
     }
     
     private fun updateEmptyState(isEmpty: Boolean) {
