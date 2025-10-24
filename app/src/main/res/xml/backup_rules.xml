@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<full-backup-content>
-    <!-- Исключаем все данные из автоматического резервного копирования для безопасности -->
-    <exclude domain="database" path="."/>
-    <exclude domain="sharedpref" path="."/>
-    <exclude domain="file" path="."/>
-    <exclude domain="external" path="."/>
-</full-backup-content>

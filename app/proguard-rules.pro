@@ -102,6 +102,30 @@
     @androidx.annotation.Keep *;
 }
 
+# Удаляем все отладочные символы и информацию
+-keepattributes !SourceFile,!LineNumberTable,!LocalVariableTable,!LocalVariableTypeTable
+
+# Удаляем информацию о внутренних классах
+-keepattributes !InnerClasses,!EnclosingMethod
+
+# Удаляем информацию о синтетических методах
+-keepattributes !Synthetic
+
+# Удаляем информацию о подписях
+-keepattributes !Signature
+
+# Удаляем информацию о аннотациях (кроме необходимых)
+-keepattributes !RuntimeVisibleAnnotations,!RuntimeVisibleParameterAnnotations
+
+# Удаляем информацию о bridge методах
+-keepattributes !Bridge
+
+# Удаляем информацию о varargs
+-keepattributes !Varargs
+
+# Удаляем информацию о deprecated
+-keepattributes !Deprecated
+
 # Remove debug information in release builds
 -assumenosideeffects class android.util.Log {
     public static boolean isLoggable(java.lang.String, int);
