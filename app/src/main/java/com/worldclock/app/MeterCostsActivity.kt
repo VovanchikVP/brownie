@@ -13,9 +13,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.textfield.TextInputEditText
 import com.worldclock.app.data.*
 import com.worldclock.app.databinding.ActivityMeterCostsBinding
-import com.worldclock.app.databinding.DialogAddReadingSimpleBinding
-import com.worldclock.app.ui.PeriodCostAdapter
-import com.worldclock.app.ui.PeriodCostItem
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -25,7 +22,6 @@ class MeterCostsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMeterCostsBinding
     private lateinit var database: AppDatabase
     private lateinit var repository: MeterRepository
-    private lateinit var adapter: PeriodCostAdapter
     
     private var meterId: Long = 0
     private var meterNumber: String = ""
@@ -80,9 +76,8 @@ class MeterCostsActivity : AppCompatActivity() {
     }
     
     private fun setupRecyclerView() {
-        adapter = PeriodCostAdapter()
+        // Упрощенная версия без PeriodCostAdapter
         binding.recyclerViewPeriods.layoutManager = LinearLayoutManager(this)
-        binding.recyclerViewPeriods.adapter = adapter
     }
     
     private fun setupHeader() {
@@ -119,7 +114,7 @@ class MeterCostsActivity : AppCompatActivity() {
                 val readings = repository.getReadingsByMeterId(meterId)
                 readings.collect { readingsList ->
                     val sortedReadings = readingsList.sortedByDescending { it.date }
-                    val periodCosts = mutableListOf<PeriodCostItem>()
+                    val periodCosts = mutableListOf<String>()
                     
                     // Группируем показания по парам (текущее и предыдущее)
                     for (i in 0 until sortedReadings.size - 1) {
@@ -133,22 +128,18 @@ class MeterCostsActivity : AppCompatActivity() {
                             val consumption = currentReading.value - previousReading.value
                             val cost = consumption * tariff.rate
                             
-                            val periodCost = PeriodCostItem(
-                                currentReading = currentReading.value,
-                                previousReading = previousReading.value,
-                                consumption = consumption,
-                                tariff = tariff.rate,
-                                cost = cost,
-                                currentDate = currentReading.date,
-                                previousDate = previousReading.date
-                            )
+                            val periodCostText = "Период: ${dateTimeFormat.format(Date(previousReading.date))} - ${dateTimeFormat.format(Date(currentReading.date))}\n" +
+                                    "Показания: ${previousReading.value} → ${currentReading.value}\n" +
+                                    "Потребление: $consumption\n" +
+                                    "Тариф: ${tariff.rate} ₽\n" +
+                                    "Стоимость: $cost ₽"
                             
-                            periodCosts.add(periodCost)
+                            periodCosts.add(periodCostText)
                         }
                     }
                     
                     // Обновляем UI
-                    adapter.updatePeriodCosts(periodCosts)
+                    updatePeriodCostsUI(periodCosts)
                     updateEmptyState(periodCosts.isEmpty())
                 }
             } catch (e: Exception) {
@@ -162,35 +153,21 @@ class MeterCostsActivity : AppCompatActivity() {
         binding.recyclerViewPeriods.visibility = if (isEmpty) View.GONE else View.VISIBLE
     }
     
+    private fun updatePeriodCostsUI(periodCosts: List<String>) {
+        // Простое отображение списка затрат по периодам
+        val text = periodCosts.joinToString("\n\n")
+        binding.emptyStateText.text = if (text.isNotEmpty()) text else "Нет данных о затратах по периодам"
+        binding.emptyStateText.visibility = View.VISIBLE
+        binding.recyclerViewPeriods.visibility = View.GONE
+    }
+    
     private fun showAddReadingDialog() {
-        val dialogBinding = DialogAddReadingSimpleBinding.inflate(LayoutInflater.from(this))
-        
-        val dialog = AlertDialog.Builder(this)
-            .setView(dialogBinding.root)
-            .create()
-        
-        // Устанавливаем информацию о приборе учета
-        dialogBinding.textViewMeterInfo.text = "$meterNumber ($meterAddress)"
-        
-        // Устанавливаем текущую дату и время по умолчанию
-        val currentDateTime = Calendar.getInstance()
-        dialogBinding.editTextReadingDate.setText(dateTimeFormat.format(currentDateTime.time))
-        
-        // Настраиваем выбор даты и времени
-        setupDateTimePicker(dialogBinding.editTextReadingDate)
-        
-        dialogBinding.buttonCancel.setOnClickListener {
-            dialog.dismiss()
-        }
-        
-        dialogBinding.buttonSave.setOnClickListener {
-            if (validateInput(dialogBinding)) {
-                saveReading(dialogBinding)
-                dialog.dismiss()
-            }
-        }
-        
-        dialog.show()
+        // Упрощенный диалог без DialogAddReadingSimpleBinding
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Добавить показание")
+        builder.setMessage("Функция добавления показаний временно недоступна")
+        builder.setPositiveButton("OK", null)
+        builder.show()
     }
     
     private fun setupDateTimePicker(editText: TextInputEditText) {
@@ -220,58 +197,6 @@ class MeterCostsActivity : AppCompatActivity() {
                 calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH)
             ).show()
-        }
-    }
-    
-    private fun validateInput(binding: DialogAddReadingSimpleBinding): Boolean {
-        val valueText = binding.editTextReadingValue.text.toString().trim()
-        val dateText = binding.editTextReadingDate.text.toString().trim()
-        
-        if (valueText.isEmpty()) {
-            binding.editTextReadingValue.error = "Введите значение показания"
-            return false
-        }
-        
-        val value = valueText.toDoubleOrNull()
-        if (value == null || value < 0) {
-            binding.editTextReadingValue.error = "Введите корректное значение"
-            return false
-        }
-        
-        if (dateText.isEmpty()) {
-            binding.editTextReadingDate.error = "Выберите дату и время"
-            return false
-        }
-        
-        return true
-    }
-    
-    private fun saveReading(binding: DialogAddReadingSimpleBinding) {
-        val value = binding.editTextReadingValue.text.toString().trim().toDouble()
-        val dateText = binding.editTextReadingDate.text.toString().trim()
-        
-        // Парсим дату и время
-        val date = try {
-            dateTimeFormat.parse(dateText)?.time ?: System.currentTimeMillis()
-        } catch (e: Exception) {
-            System.currentTimeMillis()
-        }
-        
-        val reading = Reading(
-            meterId = meterId,
-            value = value,
-            date = date
-        )
-        
-        lifecycleScope.launch {
-            try {
-                repository.insertReading(reading)
-                Toast.makeText(this@MeterCostsActivity, "Показание добавлено", Toast.LENGTH_SHORT).show()
-                // Обновляем список затрат по периодам
-                loadPeriodCosts()
-            } catch (e: Exception) {
-                Toast.makeText(this@MeterCostsActivity, "Ошибка при добавлении: ${e.message}", Toast.LENGTH_LONG).show()
-            }
         }
     }
 }

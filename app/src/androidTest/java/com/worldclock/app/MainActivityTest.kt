@@ -19,7 +19,7 @@ class MainActivityTest {
     val activityRule = ActivityScenarioRule(MainActivity::class.java)
 
     @Test
-    fun `app name should be displayed`() {
+    fun `app_name_should_be_displayed`() {
         // Then
         onView(withId(R.id.titleText))
             .check(matches(isDisplayed()))
@@ -27,7 +27,7 @@ class MainActivityTest {
     }
 
     @Test
-    fun `menu button should be displayed and clickable`() {
+    fun `menu_button_should_be_displayed_and_clickable`() {
         // Then
         onView(withId(R.id.menuButton))
             .check(matches(isDisplayed()))
@@ -35,7 +35,7 @@ class MainActivityTest {
     }
 
     @Test
-    fun `menu button should open menu dialog`() {
+    fun `menu_button_should_open_menu_dialog`() {
         // When
         onView(withId(R.id.menuButton))
             .perform(click())
@@ -46,7 +46,7 @@ class MainActivityTest {
     }
 
     @Test
-    fun `menu should contain all sections`() {
+    fun `menu_should_contain_all_sections`() {
         // When
         onView(withId(R.id.menuButton))
             .perform(click())
@@ -61,14 +61,14 @@ class MainActivityTest {
     }
 
     @Test
-    fun `costs recycler view should be displayed`() {
+    fun `costs_recycler_view_should_be_displayed`() {
         // Then
         onView(withId(R.id.recyclerViewCosts))
             .check(matches(isDisplayed()))
     }
 
     @Test
-    fun `empty state should be displayed when no data`() {
+    fun `empty_state_should_be_displayed_when_no_data`() {
         // Then
         onView(withId(R.id.emptyStateText))
             .check(matches(isDisplayed()))

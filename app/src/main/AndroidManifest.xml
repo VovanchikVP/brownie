@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Явно указываем, что приложение не требует разрешений -->
+    <uses-permission android:name="android.permission.INTERNET" android:required="false" />
+    
     <application
         android:label="@string/app_name"
         android:icon="@mipmap/ic_launcher"
@@ -10,12 +13,17 @@
         android:theme="@style/Theme.WorldClock"
         android:usesCleartextTraffic="false"
         android:hardwareAccelerated="true"
-        android:largeHeap="false">
+        android:largeHeap="false"
+        android:requestLegacyExternalStorage="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules">
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.WorldClock">
-            <intent-filter>
+            android:theme="@style/Theme.WorldClock"
+            android:launchMode="singleTop"
+            android:excludeFromRecents="false">
+            <intent-filter android:autoVerify="false">
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
@@ -26,6 +34,7 @@
         <activity android:name=".ReadingsActivity" android:exported="false" />
         <activity android:name=".MeterCostsActivity" android:exported="false" />
         <activity android:name=".AddressCostsActivity" android:exported="false" />
+        <activity android:name=".DataActivity" android:exported="false" />
     </application>
 
 </manifest>

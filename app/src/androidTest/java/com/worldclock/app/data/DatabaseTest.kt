@@ -4,7 +4,7 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -37,7 +37,7 @@ class DatabaseTest {
     }
 
     @Test
-    fun `insert and get meter should work correctly`() = runTest {
+    fun `insert_and_get_meter_should_work_correctly`() = runBlocking {
         // Given
         val meter = Meter(0, "EL-001", "ул. Ленина, д. 10", MeterType.ELECTRICITY)
 
@@ -53,7 +53,7 @@ class DatabaseTest {
     }
 
     @Test
-    fun `get all meters should return inserted meters`() = runTest {
+    fun `get_all_meters_should_return_inserted_meters`() = runBlocking {
         // Given
         val meter1 = Meter(0, "EL-001", "ул. Ленина, д. 10", MeterType.ELECTRICITY)
         val meter2 = Meter(0, "GAS-002", "ул. Пушкина, д. 5", MeterType.GAS)
@@ -70,7 +70,7 @@ class DatabaseTest {
     }
 
     @Test
-    fun `insert and get reading should work correctly`() = runTest {
+    fun `insert_and_get_reading_should_work_correctly`() = runBlocking {
         // Given
         val meter = Meter(0, "EL-001", "ул. Ленина, д. 10", MeterType.ELECTRICITY)
         val meterId = meterDao.insertMeter(meter)
@@ -83,11 +83,11 @@ class DatabaseTest {
         // Then
         assertNotNull(retrievedReading)
         assertEquals(meterId, retrievedReading?.meterId)
-        assertEquals(1000.0, retrievedReading?.value, 0.001)
+        assertEquals(1000.0, retrievedReading?.value ?: 0.0, 0.001)
     }
 
     @Test
-    fun `get readings by meter id should return correct readings`() = runTest {
+    fun `get_readings_by_meter_id_should_return_correct_readings`() = runBlocking {
         // Given
         val meter = Meter(0, "EL-001", "ул. Ленина, д. 10", MeterType.ELECTRICITY)
         val meterId = meterDao.insertMeter(meter)
@@ -106,7 +106,7 @@ class DatabaseTest {
     }
 
     @Test
-    fun `insert and get tariff should work correctly`() = runTest {
+    fun `insert_and_get_tariff_should_work_correctly`() = runBlocking {
         // Given
         val meter = Meter(0, "EL-001", "ул. Ленина, д. 10", MeterType.ELECTRICITY)
         val meterId = meterDao.insertMeter(meter)
@@ -119,11 +119,11 @@ class DatabaseTest {
         // Then
         assertNotNull(retrievedTariff)
         assertEquals(meterId, retrievedTariff?.meterId)
-        assertEquals(4.5, retrievedTariff?.rate, 0.001)
+        assertEquals(4.5, retrievedTariff?.rate ?: 0.0, 0.001)
     }
 
     @Test
-    fun `get tariffs by meter id should return correct tariffs`() = runTest {
+    fun `get_tariffs_by_meter_id_should_return_correct_tariffs`() = runBlocking {
         // Given
         val meter = Meter(0, "EL-001", "ул. Ленина, д. 10", MeterType.ELECTRICITY)
         val meterId = meterDao.insertMeter(meter)
@@ -142,7 +142,7 @@ class DatabaseTest {
     }
 
     @Test
-    fun `delete meter should remove meter and related data`() = runTest {
+    fun `delete_meter_should_remove_meter_and_related_data`() = runBlocking {
         // Given
         val meter = Meter(0, "EL-001", "ул. Ленина, д. 10", MeterType.ELECTRICITY)
         val meterId = meterDao.insertMeter(meter)
@@ -161,7 +161,7 @@ class DatabaseTest {
     }
 
     @Test
-    fun `update meter should modify existing meter`() = runTest {
+    fun `update_meter_should_modify_existing_meter`() = runBlocking {
         // Given
         val meter = Meter(0, "EL-001", "ул. Ленина, д. 10", MeterType.ELECTRICITY)
         val meterId = meterDao.insertMeter(meter)
@@ -178,7 +178,7 @@ class DatabaseTest {
     }
 
     @Test
-    fun `get meters by type should return correct meters`() = runTest {
+    fun `get_meters_by_type_should_return_correct_meters`() = runBlocking {
         // Given
         val electricityMeter = Meter(0, "EL-001", "ул. Ленина, д. 10", MeterType.ELECTRICITY)
         val gasMeter = Meter(0, "GAS-002", "ул. Пушкина, д. 5", MeterType.GAS)

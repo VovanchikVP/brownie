@@ -53,4 +53,9 @@ class MeterRepository(
     suspend fun updateTariff(tariff: Tariff) = tariffDao.updateTariff(tariff)
     
     suspend fun deleteTariff(tariff: Tariff) = tariffDao.deleteTariff(tariff)
+    
+    // Bulk operations for import/export
+    suspend fun deleteAllMeters() = meterDao.deleteAllMeters()
+    suspend fun deleteAllReadings() = readingDao.deleteAllReadings()
+    suspend fun deleteAllTariffs() = tariffDao.deleteAllTariffs()
 }

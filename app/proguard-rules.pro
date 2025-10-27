@@ -153,3 +153,27 @@
 -keep class com.worldclock.app.data.Reading  
 -keep class com.worldclock.app.data.Tariff
 -keep class com.worldclock.app.data.MeterType
+
+# Security: Remove all debug information
+-keepattributes !SourceFile,!LineNumberTable,!LocalVariableTable,!LocalVariableTypeTable,!InnerClasses,!EnclosingMethod,!Synthetic,!Signature,!RuntimeVisibleAnnotations,!RuntimeVisibleParameterAnnotations,!Bridge,!Varargs,!Deprecated
+
+# Security: Obfuscate all class names
+-repackageclasses ''
+-allowaccessmodification
+-optimizations !code/simplification/arithmetic
+
+# Security: Remove all logging
+-assumenosideeffects class android.util.Log {
+    public static boolean isLoggable(java.lang.String, int);
+    public static int v(...);
+    public static int i(...);
+    public static int w(...);
+    public static int d(...);
+    public static int e(...);
+}
+
+# Security: Remove System.out.println
+-assumenosideeffects class java.io.PrintStream {
+    public void println(%);
+    public void println(**);
+}

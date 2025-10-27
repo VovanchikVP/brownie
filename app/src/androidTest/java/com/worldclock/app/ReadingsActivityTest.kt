@@ -4,6 +4,7 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.*
+import org.hamcrest.Matchers.not
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
@@ -19,7 +20,7 @@ class ReadingsActivityTest {
     val activityRule = ActivityScenarioRule(MainActivity::class.java)
 
     @Test
-    fun `should navigate to readings activity from menu`() {
+    fun `should_navigate_to_readings_activity_from_menu`() {
         // When
         onView(withId(R.id.menuButton))
             .perform(click())
@@ -32,7 +33,7 @@ class ReadingsActivityTest {
     }
 
     @Test
-    fun `should display add reading button`() {
+    fun `should_display_add_reading_button`() {
         // Given
         navigateToReadingsActivity()
 
@@ -43,7 +44,7 @@ class ReadingsActivityTest {
     }
 
     @Test
-    fun `should open add reading dialog when fab clicked`() {
+    fun `should_open_add_reading_dialog_when_fab_clicked`() {
         // Given
         navigateToReadingsActivity()
 
@@ -57,7 +58,7 @@ class ReadingsActivityTest {
     }
 
     @Test
-    fun `should display reading form fields`() {
+    fun `should_display_reading_form_fields`() {
         // Given
         navigateToReadingsActivity()
         onView(withId(R.id.fabAddReading))
@@ -75,7 +76,7 @@ class ReadingsActivityTest {
     }
 
     @Test
-    fun `should display address filter field`() {
+    fun `should_display_address_filter_field`() {
         // Given
         navigateToReadingsActivity()
         onView(withId(R.id.fabAddReading))
@@ -89,7 +90,7 @@ class ReadingsActivityTest {
     }
 
     @Test
-    fun `should display meter selection field`() {
+    fun `should_display_meter_selection_field`() {
         // Given
         navigateToReadingsActivity()
         onView(withId(R.id.fabAddReading))
@@ -103,7 +104,7 @@ class ReadingsActivityTest {
     }
 
     @Test
-    fun `should display reading value field`() {
+    fun `should_display_reading_value_field`() {
         // Given
         navigateToReadingsActivity()
         onView(withId(R.id.fabAddReading))
@@ -115,7 +116,7 @@ class ReadingsActivityTest {
     }
 
     @Test
-    fun `should display reading date field`() {
+    fun `should_display_reading_date_field`() {
         // Given
         navigateToReadingsActivity()
         onView(withId(R.id.fabAddReading))
@@ -129,7 +130,7 @@ class ReadingsActivityTest {
     }
 
     @Test
-    fun `should validate required fields`() {
+    fun `should_validate_required_fields`() {
         // Given
         navigateToReadingsActivity()
         onView(withId(R.id.fabAddReading))
@@ -149,7 +150,7 @@ class ReadingsActivityTest {
     }
 
     @Test
-    fun `should close dialog when cancel clicked`() {
+    fun `should_close_dialog_when_cancel_clicked`() {
         // Given
         navigateToReadingsActivity()
         onView(withId(R.id.fabAddReading))

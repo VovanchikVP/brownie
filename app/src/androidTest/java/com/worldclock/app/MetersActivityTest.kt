@@ -4,6 +4,7 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.*
+import org.hamcrest.Matchers.not
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
@@ -19,7 +20,7 @@ class MetersActivityTest {
     val activityRule = ActivityScenarioRule(MainActivity::class.java)
 
     @Test
-    fun `should navigate to meters activity from menu`() {
+    fun `should_navigate_to_meters_activity_from_menu`() {
         // When
         onView(withId(R.id.menuButton))
             .perform(click())
@@ -32,7 +33,7 @@ class MetersActivityTest {
     }
 
     @Test
-    fun `should display add meter button`() {
+    fun `should_display_add_meter_button`() {
         // Given
         navigateToMetersActivity()
 
@@ -43,7 +44,7 @@ class MetersActivityTest {
     }
 
     @Test
-    fun `should open add meter dialog when fab clicked`() {
+    fun `should_open_add_meter_dialog_when_fab_clicked`() {
         // Given
         navigateToMetersActivity()
 
@@ -57,7 +58,7 @@ class MetersActivityTest {
     }
 
     @Test
-    fun `should display meter form fields`() {
+    fun `should_display_meter_form_fields`() {
         // Given
         navigateToMetersActivity()
         onView(withId(R.id.fabAddMeter))
@@ -71,7 +72,7 @@ class MetersActivityTest {
     }
 
     @Test
-    fun `should display meter type radio buttons`() {
+    fun `should_display_meter_type_radio_buttons`() {
         // Given
         navigateToMetersActivity()
         onView(withId(R.id.fabAddMeter))
@@ -89,7 +90,7 @@ class MetersActivityTest {
     }
 
     @Test
-    fun `should display dialog buttons`() {
+    fun `should_display_dialog_buttons`() {
         // Given
         navigateToMetersActivity()
         onView(withId(R.id.fabAddMeter))
@@ -103,7 +104,7 @@ class MetersActivityTest {
     }
 
     @Test
-    fun `should validate required fields`() {
+    fun `should_validate_required_fields`() {
         // Given
         navigateToMetersActivity()
         onView(withId(R.id.fabAddMeter))
@@ -121,7 +122,7 @@ class MetersActivityTest {
     }
 
     @Test
-    fun `should close dialog when cancel clicked`() {
+    fun `should_close_dialog_when_cancel_clicked`() {
         // Given
         navigateToMetersActivity()
         onView(withId(R.id.fabAddMeter))

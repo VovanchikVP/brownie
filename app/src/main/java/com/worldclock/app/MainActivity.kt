@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity() {
     
     // Tutorial manager
     private lateinit var tutorialManager: TutorialManager
-    
+
     // Состояние для отслеживания наличия приборов
     private var hasMeters = false
     
@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity() {
         
         // Инициализация tutorial manager
         tutorialManager = TutorialManager(this)
-        
+
         // Настройка RecyclerView для затрат
         setupCostsRecyclerView()
         
@@ -131,6 +131,12 @@ class MainActivity : AppCompatActivity() {
         dialogBinding.menuItemReadings.setOnClickListener {
             dialog.dismiss()
             val intent = Intent(this, ReadingsActivity::class.java)
+            startActivity(intent)
+        }
+        
+        dialogBinding.menuItemData.setOnClickListener {
+            dialog.dismiss()
+            val intent = Intent(this, DataActivity::class.java)
             startActivity(intent)
         }
         
@@ -265,7 +271,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    
+
     private fun showAddReadingDialog() {
         val dialogBinding = DialogAddReadingBinding.inflate(LayoutInflater.from(this))
         

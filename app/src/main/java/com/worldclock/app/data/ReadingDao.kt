@@ -38,4 +38,7 @@ interface ReadingDao {
     
     @Query("DELETE FROM readings WHERE meterId = :meterId")
     suspend fun deleteReadingsByMeterId(meterId: Long)
+    
+    @Query("DELETE FROM readings")
+    suspend fun deleteAllReadings()
 }

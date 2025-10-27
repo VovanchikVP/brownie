@@ -38,4 +38,7 @@ interface TariffDao {
     
     @Query("DELETE FROM tariffs WHERE meterId = :meterId")
     suspend fun deleteTariffsByMeterId(meterId: Long)
+    
+    @Query("DELETE FROM tariffs")
+    suspend fun deleteAllTariffs()
 }

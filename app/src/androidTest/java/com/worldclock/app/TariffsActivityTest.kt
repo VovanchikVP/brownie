@@ -4,6 +4,7 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.*
+import org.hamcrest.Matchers.not
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
@@ -19,7 +20,7 @@ class TariffsActivityTest {
     val activityRule = ActivityScenarioRule(MainActivity::class.java)
 
     @Test
-    fun `should navigate to tariffs activity from menu`() {
+    fun `should_navigate_to_tariffs_activity_from_menu`() {
         // When
         onView(withId(R.id.menuButton))
             .perform(click())
@@ -32,7 +33,7 @@ class TariffsActivityTest {
     }
 
     @Test
-    fun `should display add tariff button`() {
+    fun `should_display_add_tariff_button`() {
         // Given
         navigateToTariffsActivity()
 
@@ -43,7 +44,7 @@ class TariffsActivityTest {
     }
 
     @Test
-    fun `should open add tariff dialog when fab clicked`() {
+    fun `should_open_add_tariff_dialog_when_fab_clicked`() {
         // Given
         navigateToTariffsActivity()
 
@@ -57,7 +58,7 @@ class TariffsActivityTest {
     }
 
     @Test
-    fun `should display tariff form fields`() {
+    fun `should_display_tariff_form_fields`() {
         // Given
         navigateToTariffsActivity()
         onView(withId(R.id.fabAddTariff))
@@ -73,7 +74,7 @@ class TariffsActivityTest {
     }
 
     @Test
-    fun `should display end date checkbox`() {
+    fun `should_display_end_date_checkbox`() {
         // Given
         navigateToTariffsActivity()
         onView(withId(R.id.fabAddTariff))
@@ -85,7 +86,7 @@ class TariffsActivityTest {
     }
 
     @Test
-    fun `should show end date field when checkbox checked`() {
+    fun `should_show_end_date_field_when_checkbox_checked`() {
         // Given
         navigateToTariffsActivity()
         onView(withId(R.id.fabAddTariff))
@@ -101,7 +102,7 @@ class TariffsActivityTest {
     }
 
     @Test
-    fun `should hide end date field when checkbox unchecked`() {
+    fun `should_hide_end_date_field_when_checkbox_unchecked`() {
         // Given
         navigateToTariffsActivity()
         onView(withId(R.id.fabAddTariff))
@@ -119,7 +120,7 @@ class TariffsActivityTest {
     }
 
     @Test
-    fun `should validate required fields`() {
+    fun `should_validate_required_fields`() {
         // Given
         navigateToTariffsActivity()
         onView(withId(R.id.fabAddTariff))
@@ -139,7 +140,7 @@ class TariffsActivityTest {
     }
 
     @Test
-    fun `should close dialog when cancel clicked`() {
+    fun `should_close_dialog_when_cancel_clicked`() {
         // Given
         navigateToTariffsActivity()
         onView(withId(R.id.fabAddTariff))
