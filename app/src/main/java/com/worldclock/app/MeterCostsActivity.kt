@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Toast
@@ -13,7 +14,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.textfield.TextInputEditText
 import com.worldclock.app.data.*
 import com.worldclock.app.databinding.ActivityMeterCostsBinding
+import com.worldclock.app.ui.PeriodCostAdapter
+import com.worldclock.app.ui.PeriodCostItem
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -22,6 +27,7 @@ class MeterCostsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMeterCostsBinding
     private lateinit var database: AppDatabase
     private lateinit var repository: MeterRepository
+    private lateinit var periodCostAdapter: PeriodCostAdapter
     
     private var meterId: Long = 0
     private var meterNumber: String = ""
@@ -76,8 +82,9 @@ class MeterCostsActivity : AppCompatActivity() {
     }
     
     private fun setupRecyclerView() {
-        // Упрощенная версия без PeriodCostAdapter
+        periodCostAdapter = PeriodCostAdapter()
         binding.recyclerViewPeriods.layoutManager = LinearLayoutManager(this)
+        binding.recyclerViewPeriods.adapter = periodCostAdapter
     }
     
     private fun setupHeader() {
@@ -110,11 +117,26 @@ class MeterCostsActivity : AppCompatActivity() {
     private fun loadPeriodCosts() {
         lifecycleScope.launch {
             try {
+                // Проверяем, что meterId валиден
+                if (meterId == 0L) {
+                    updateEmptyState(true)
+                    return@launch
+                }
+                
                 // Получаем все показания для прибора, отсортированные по дате
                 val readings = repository.getReadingsByMeterId(meterId)
                 readings.collect { readingsList ->
                     val sortedReadings = readingsList.sortedByDescending { it.date }
-                    val periodCosts = mutableListOf<String>()
+                    val periodCostItems = mutableListOf<PeriodCostItem>()
+                    
+                    // Для расчета периода нужно минимум 2 показания
+                    if (sortedReadings.size < 2) {
+                        withContext(Dispatchers.Main) {
+                            updatePeriodCostsUI(periodCostItems)
+                            updateEmptyState(true)
+                        }
+                        return@collect
+                    }
                     
                     // Группируем показания по парам (текущее и предыдущее)
                     for (i in 0 until sortedReadings.size - 1) {
@@ -123,27 +145,41 @@ class MeterCostsActivity : AppCompatActivity() {
                         
                         // Получаем тариф, действующий на дату текущего показания
                         val tariff = repository.getCurrentTariffByMeterId(meterId, currentReading.date)
+                        Log.d("MeterCostsActivity", "Period $i: tariff=${tariff?.rate}, current=${currentReading.value}, previous=${previousReading.value}")
                         
-                        if (tariff != null) {
+                        if (tariff != null && currentReading.value >= previousReading.value) {
                             val consumption = currentReading.value - previousReading.value
                             val cost = consumption * tariff.rate
                             
-                            val periodCostText = "Период: ${dateTimeFormat.format(Date(previousReading.date))} - ${dateTimeFormat.format(Date(currentReading.date))}\n" +
-                                    "Показания: ${previousReading.value} → ${currentReading.value}\n" +
-                                    "Потребление: $consumption\n" +
-                                    "Тариф: ${tariff.rate} ₽\n" +
-                                    "Стоимость: $cost ₽"
+                            val periodCostItem = PeriodCostItem(
+                                currentReading = currentReading.value,
+                                previousReading = previousReading.value,
+                                consumption = consumption,
+                                tariff = tariff.rate,
+                                cost = cost,
+                                currentDate = currentReading.date,
+                                previousDate = previousReading.date
+                            )
                             
-                            periodCosts.add(periodCostText)
+                            periodCostItems.add(periodCostItem)
+                            Log.d("MeterCostsActivity", "Added period cost item: cost=$cost, consumption=$consumption")
+                        } else {
+                            Log.d("MeterCostsActivity", "Skipped period $i: tariff=${tariff?.rate}, valid=${currentReading.value >= previousReading.value}")
                         }
                     }
                     
-                    // Обновляем UI
-                    updatePeriodCostsUI(periodCosts)
-                    updateEmptyState(periodCosts.isEmpty())
+                    // Обновляем UI на главном потоке
+                    withContext(Dispatchers.Main) {
+                        updatePeriodCostsUI(periodCostItems)
+                        updateEmptyState(periodCostItems.isEmpty())
+                    }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+                Log.e("MeterCostsActivity", "Error loading period costs", e)
+                withContext(Dispatchers.Main) {
+                    updateEmptyState(true)
+                }
             }
         }
     }
@@ -153,12 +189,12 @@ class MeterCostsActivity : AppCompatActivity() {
         binding.recyclerViewPeriods.visibility = if (isEmpty) View.GONE else View.VISIBLE
     }
     
-    private fun updatePeriodCostsUI(periodCosts: List<String>) {
-        // Простое отображение списка затрат по периодам
-        val text = periodCosts.joinToString("\n\n")
-        binding.emptyStateText.text = if (text.isNotEmpty()) text else "Нет данных о затратах по периодам"
-        binding.emptyStateText.visibility = View.VISIBLE
-        binding.recyclerViewPeriods.visibility = View.GONE
+    private fun updatePeriodCostsUI(periodCosts: List<PeriodCostItem>) {
+        // Обновляем адаптер с новыми данными
+        Log.d("MeterCostsActivity", "Updating UI with ${periodCosts.size} period costs")
+        periodCostAdapter.updatePeriodCosts(periodCosts)
+        // Принудительно уведомляем RecyclerView об обновлении
+        binding.recyclerViewPeriods.invalidate()
     }
     
     private fun showAddReadingDialog() {

@@ -10,8 +10,10 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.Assert.*
+import org.robolectric.annotation.Config
 
 @RunWith(AndroidJUnit4::class)
+@Config(manifest = org.robolectric.annotation.Config.NONE)
 class TariffDaoTest {
 
     private lateinit var database: AppDatabase

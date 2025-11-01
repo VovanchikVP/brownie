@@ -11,8 +11,14 @@ import androidx.lifecycle.lifecycleScope
 import com.worldclock.app.data.*
 import com.worldclock.app.databinding.ActivityDataBinding
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import org.json.JSONArray
 import org.json.JSONObject
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
+import android.content.ContentValues
+import android.content.ContentResolver
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -65,14 +71,10 @@ class DataActivity : AppCompatActivity() {
         binding.buttonExportData.setOnClickListener {
             lifecycleScope.launch {
                 try {
-                    // Получаем данные из Flow
-                    var metersList: List<Meter> = emptyList()
-                    var readingsList: List<Reading> = emptyList()
-                    var tariffsList: List<Tariff> = emptyList()
-                    
-                    repository.getAllMeters().collect { metersList = it }
-                    repository.getAllReadings().collect { readingsList = it }
-                    repository.getAllTariffs().collect { tariffsList = it }
+                    // Получаем данные из Flow используя first() для получения одного значения
+                    val metersList = repository.getAllMeters().first()
+                    val readingsList = repository.getAllReadings().first()
+                    val tariffsList = repository.getAllTariffs().first()
                     
                     val jsonObject = JSONObject().apply {
                         put("version", "1.0")
@@ -118,6 +120,7 @@ class DataActivity : AppCompatActivity() {
                     
                     saveToFile(jsonObject.toString())
                 } catch (e: Exception) {
+                    e.printStackTrace()
                     Toast.makeText(this@DataActivity, "Ошибка при экспорте данных: ${e.message ?: "Неизвестная ошибка"}", Toast.LENGTH_LONG).show()
                 }
             }
@@ -201,19 +204,52 @@ class DataActivity : AppCompatActivity() {
     private fun saveToFile(jsonData: String) {
         try {
             val fileName = "meters_backup_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())}.json"
-            val file = File(getExternalFilesDir(null), fileName)
+            val file: File?
+            val filePath: String
             
-            file.writeText(jsonData)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // Android 10+ - используем MediaStore API
+                val contentValues = ContentValues().apply {
+                    put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+                    put(MediaStore.Downloads.MIME_TYPE, "application/json")
+                    put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                }
+                
+                val uri = contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+                if (uri != null) {
+                    contentResolver.openOutputStream(uri)?.use { outputStream ->
+                        outputStream.write(jsonData.toByteArray())
+                    }
+                }
+                filePath = "Downloads/$fileName"
+                file = null
+                } else {
+                    // Android 9 и ниже - используем прямой доступ к файлам
+                    val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    if (!downloadsDir.exists()) {
+                        downloadsDir.mkdirs()
+                    }
+                    file = File(downloadsDir, fileName)
+                    file.writeText(jsonData)
+                    filePath = file.absolutePath
+                }
             
             // Показываем диалог с результатом
+            val message = if (file != null) {
+                "Данные сохранены в файл:\n${file.name}\n\nПуть: ${file.absolutePath}"
+            } else {
+                "Данные сохранены в файл:\n$fileName\n\nПуть: $filePath"
+            }
+            
             AlertDialog.Builder(this)
                 .setTitle("Экспорт завершен")
-                .setMessage("Данные сохранены в файл:\n${file.name}\n\nПуть: ${file.absolutePath}")
+                .setMessage(message)
                 .setPositiveButton("OK", null)
                 .show()
                 
             Toast.makeText(this, "Данные успешно экспортированы", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
+            e.printStackTrace()
             Toast.makeText(this, "Ошибка при сохранении файла: ${e.message ?: "Неизвестная ошибка"}", Toast.LENGTH_LONG).show()
         }
     }

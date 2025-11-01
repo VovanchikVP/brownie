@@ -154,26 +154,14 @@
 -keep class com.worldclock.app.data.Tariff
 -keep class com.worldclock.app.data.MeterType
 
-# Security: Remove all debug information
--keepattributes !SourceFile,!LineNumberTable,!LocalVariableTable,!LocalVariableTypeTable,!InnerClasses,!EnclosingMethod,!Synthetic,!Signature,!RuntimeVisibleAnnotations,!RuntimeVisibleParameterAnnotations,!Bridge,!Varargs,!Deprecated
-
-# Security: Obfuscate all class names
--repackageclasses ''
--allowaccessmodification
--optimizations !code/simplification/arithmetic
-
-# Security: Remove all logging
--assumenosideeffects class android.util.Log {
-    public static boolean isLoggable(java.lang.String, int);
-    public static int v(...);
-    public static int i(...);
-    public static int w(...);
-    public static int d(...);
-    public static int e(...);
+# Keep ViewBinding classes (необходимо для работы)
+-keep class * implements androidx.viewbinding.ViewBinding {
+    public static ** inflate(android.view.LayoutInflater);
+    public static ** inflate(android.view.LayoutInflater, android.view.ViewGroup, boolean);
+    public static ** bind(android.view.View);
 }
 
-# Security: Remove System.out.println
--assumenosideeffects class java.io.PrintStream {
-    public void println(%);
-    public void println(**);
+# Keep Parcelable implementations (если используются)
+-keepclassmembers class * implements android.os.Parcelable {
+    public static final android.os.Parcelable$Creator CREATOR;
 }
