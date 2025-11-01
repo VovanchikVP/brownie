@@ -11,9 +11,12 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import android.widget.AutoCompleteTextView
+import android.widget.TextView
 import com.google.android.material.textfield.TextInputEditText
 import com.worldclock.app.data.*
 import com.worldclock.app.databinding.ActivityMeterCostsBinding
+import com.worldclock.app.databinding.DialogAddReadingBinding
 import com.worldclock.app.ui.PeriodCostAdapter
 import com.worldclock.app.ui.PeriodCostItem
 import kotlinx.coroutines.launch
@@ -198,12 +201,120 @@ class MeterCostsActivity : AppCompatActivity() {
     }
     
     private fun showAddReadingDialog() {
-        // Упрощенный диалог без DialogAddReadingSimpleBinding
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Добавить показание")
-        builder.setMessage("Функция добавления показаний временно недоступна")
-        builder.setPositiveButton("OK", null)
-        builder.show()
+        val dialogBinding = DialogAddReadingBinding.inflate(LayoutInflater.from(this))
+        
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogBinding.root)
+            .create()
+        
+        // Скрываем фильтр по адресу, так как прибор уже выбран
+        dialogBinding.editTextAddressFilter.let { addressFilter ->
+            // Скрываем TextInputLayout (родительский элемент editTextAddressFilter)
+            val textInputLayout = addressFilter.parent.parent as? com.google.android.material.textfield.TextInputLayout
+            textInputLayout?.visibility = View.GONE
+            
+            // Скрываем TextView заголовка фильтра (он находится перед TextInputLayout)
+            val linearLayout = dialogBinding.root as? android.widget.LinearLayout
+            linearLayout?.let { layout ->
+                for (i in 0 until layout.childCount) {
+                    val child = layout.getChildAt(i)
+                    if (child == textInputLayout && i > 0) {
+                        // Скрываем предыдущий TextView (заголовок)
+                        val previousChild = layout.getChildAt(i - 1)
+                        if (previousChild is TextView) {
+                            previousChild.visibility = View.GONE
+                        }
+                        break
+                    }
+                }
+            }
+        }
+        
+        // Предустанавливаем выбранный прибор и делаем его неактивным
+        val meterDisplayText = "${meterNumber} (${meterType.displayName}) - ${meterAddress}"
+        dialogBinding.autoCompleteMeter.setText(meterDisplayText, false)
+        dialogBinding.autoCompleteMeter.isEnabled = false
+        dialogBinding.autoCompleteMeter.isFocusable = false
+        dialogBinding.autoCompleteMeter.isClickable = false
+        
+        // Скрываем родительский контейнер для выбора прибора (опционально, для упрощения UI)
+        // Можно оставить видимым, чтобы показать, для какого прибора добавляется показание
+        
+        // Устанавливаем текущую дату и время по умолчанию
+        val currentDateTime = Calendar.getInstance()
+        dialogBinding.editTextReadingDate.setText(dateTimeFormat.format(currentDateTime.time))
+        
+        setupDateTimePicker(dialogBinding.editTextReadingDate)
+        
+        dialogBinding.buttonCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+        
+        dialogBinding.buttonSave.setOnClickListener {
+            if (validateReadingInput(dialogBinding)) {
+                saveReading(dialogBinding)
+                dialog.dismiss()
+            }
+        }
+        
+        dialog.show()
+    }
+    
+    private fun validateReadingInput(binding: DialogAddReadingBinding): Boolean {
+        val valueText = binding.editTextReadingValue.text.toString().trim()
+        val dateText = binding.editTextReadingDate.text.toString().trim()
+        
+        if (valueText.isEmpty()) {
+            binding.editTextReadingValue.error = "Введите значение показания"
+            return false
+        }
+        
+        val value = valueText.toDoubleOrNull()
+        if (value == null || value < 0) {
+            binding.editTextReadingValue.error = "Введите корректное значение"
+            return false
+        }
+        
+        if (dateText.isEmpty()) {
+            binding.editTextReadingDate.error = "Выберите дату и время"
+            return false
+        }
+        
+        return true
+    }
+    
+    private fun saveReading(binding: DialogAddReadingBinding) {
+        val value = binding.editTextReadingValue.text.toString().trim().toDoubleOrNull()
+            ?: run {
+                Toast.makeText(this, "Ошибка: некорректное значение показания", Toast.LENGTH_LONG).show()
+                return
+            }
+        val dateText = binding.editTextReadingDate.text.toString().trim()
+        
+        // Парсим дату и время
+        val date = try {
+            dateTimeFormat.parse(dateText)?.time ?: System.currentTimeMillis()
+        } catch (e: Exception) {
+            System.currentTimeMillis()
+        }
+        
+        val reading = Reading(
+            meterId = meterId,
+            value = value,
+            date = date
+        )
+        
+        lifecycleScope.launch {
+            try {
+                repository.insertReading(reading)
+                Toast.makeText(this@MeterCostsActivity, "Показание добавлено", Toast.LENGTH_SHORT).show()
+                // Перезагружаем затраты по периодам
+                loadPeriodCosts()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(this@MeterCostsActivity, "Ошибка при добавлении: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
     }
     
     private fun setupDateTimePicker(editText: TextInputEditText) {

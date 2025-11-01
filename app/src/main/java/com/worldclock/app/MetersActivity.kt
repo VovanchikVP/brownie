@@ -342,7 +342,11 @@ class MetersActivity : AppCompatActivity() {
         val endDateText = binding.editTextEndDate.text.toString().trim()
         val meterText = binding.autoCompleteMeter.text.toString().trim()
         
-        val rate = rateText.toDouble()
+        val rate = rateText.toDoubleOrNull()
+            ?: run {
+                Toast.makeText(this, "Ошибка: некорректное значение тарифа", Toast.LENGTH_LONG).show()
+                return
+            }
         val startDate = dateFormat.parse(startDateText)?.time ?: System.currentTimeMillis()
         val endDate = if (binding.checkboxEndDate.isChecked && endDateText.isNotEmpty()) {
             dateFormat.parse(endDateText)?.time

@@ -251,7 +251,11 @@ class ReadingsActivity : AppCompatActivity() {
     
     private fun saveReading(binding: DialogAddReadingBinding) {
         val meterText = binding.autoCompleteMeter.text.toString().trim()
-        val value = binding.editTextReadingValue.text.toString().trim().toDouble()
+        val value = binding.editTextReadingValue.text.toString().trim().toDoubleOrNull()
+            ?: run {
+                Toast.makeText(this, "Ошибка: некорректное значение показания", Toast.LENGTH_LONG).show()
+                return
+            }
         val dateText = binding.editTextReadingDate.text.toString().trim()
         
         // Находим выбранный прибор учета

@@ -243,7 +243,11 @@ class TariffsActivity : AppCompatActivity() {
     
     private fun saveTariff(binding: DialogAddTariffBinding) {
         val meterText = binding.autoCompleteMeter.text.toString().trim()
-        val rate = binding.editTextTariffRate.text.toString().trim().toDouble()
+        val rate = binding.editTextTariffRate.text.toString().trim().toDoubleOrNull()
+            ?: run {
+                Toast.makeText(this, "Ошибка: некорректное значение тарифа", Toast.LENGTH_LONG).show()
+                return
+            }
         val startDateText = binding.editTextStartDate.text.toString().trim()
         val endDateText = binding.editTextEndDate.text.toString().trim()
         
