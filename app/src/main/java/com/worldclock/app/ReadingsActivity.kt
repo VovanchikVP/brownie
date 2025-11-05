@@ -8,8 +8,10 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
+import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -20,6 +22,8 @@ import com.worldclock.app.databinding.ActivityReadingsBinding
 import com.worldclock.app.databinding.DialogAddReadingBinding
 import com.worldclock.app.ui.ReadingAdapter
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -124,6 +128,9 @@ class ReadingsActivity : AppCompatActivity() {
         setupMeterDropdown(dialogBinding.autoCompleteMeter)
         setupAddressFilter(dialogBinding.editTextAddressFilter, dialogBinding.autoCompleteMeter)
         
+        // Добавляем слушатель на выбор прибора для динамического обновления последних показаний
+        setupMeterSelectionListener(dialogBinding)
+        
         // Устанавливаем текущую дату и время по умолчанию
         val currentDateTime = Calendar.getInstance()
         dialogBinding.editTextReadingDate.setText(dateTimeFormat.format(currentDateTime.time))
@@ -188,6 +195,83 @@ class ReadingsActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+    
+    private fun setupMeterSelectionListener(dialogBinding: DialogAddReadingBinding) {
+        dialogBinding.autoCompleteMeter.setOnItemClickListener { parent, view, position, id ->
+            // Получаем выбранный прибор
+            val selectedText = parent.getItemAtPosition(position).toString()
+            val selectedMeter = filteredMeters.find { meter ->
+                "${meter.number} (${meter.type.displayName}) - ${meter.address}" == selectedText
+            }
+            
+            // Загружаем последнее показание для выбранного прибора
+            selectedMeter?.let { meter ->
+                loadLastReadingForMeter(meter.id, dialogBinding)
+            }
+        }
+        
+        // Также обновляем при изменении текста (если пользователь вводит вручную)
+        dialogBinding.autoCompleteMeter.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            
+            override fun afterTextChanged(s: Editable?) {
+                val selectedText = s.toString().trim()
+                val selectedMeter = filteredMeters.find { meter ->
+                    "${meter.number} (${meter.type.displayName}) - ${meter.address}" == selectedText
+                }
+                
+                selectedMeter?.let { meter ->
+                    loadLastReadingForMeter(meter.id, dialogBinding)
+                } ?: run {
+                    // Если прибор не выбран, скрываем карточку
+                    hideLastReadingCard(dialogBinding)
+                }
+            }
+        })
+    }
+    
+    private fun loadLastReadingForMeter(meterId: Long, dialogBinding: DialogAddReadingBinding) {
+        lifecycleScope.launch {
+            try {
+                val latestReading = repository.getLatestReadingByMeterId(meterId)
+                
+                withContext(Dispatchers.Main) {
+                    if (latestReading != null) {
+                        showLastReading(latestReading, dialogBinding)
+                    } else {
+                        hideLastReadingCard(dialogBinding)
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Log.e("ReadingsActivity", "Error loading last reading", e)
+                withContext(Dispatchers.Main) {
+                    hideLastReadingCard(dialogBinding)
+                }
+            }
+        }
+    }
+    
+    private fun showLastReading(reading: Reading, dialogBinding: DialogAddReadingBinding) {
+        val cardLastReadings = dialogBinding.root.findViewById<androidx.cardview.widget.CardView>(R.id.cardLastReadings)
+        val textLastValue = dialogBinding.root.findViewById<TextView>(R.id.textLastReadingValue)
+        val textLastDate = dialogBinding.root.findViewById<TextView>(R.id.textLastReadingDate)
+        
+        cardLastReadings?.visibility = View.VISIBLE
+        textLastValue?.text = String.format("%.2f", reading.value)
+        textLastDate?.text = formatDateShort(reading.date)
+    }
+    
+    private fun hideLastReadingCard(dialogBinding: DialogAddReadingBinding) {
+        val cardLastReadings = dialogBinding.root.findViewById<androidx.cardview.widget.CardView>(R.id.cardLastReadings)
+        cardLastReadings?.visibility = View.GONE
+    }
+    
+    private fun formatDateShort(timestamp: Long): String {
+        val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+        return dateFormat.format(Date(timestamp))
     }
     
     private fun setupDateTimePicker(editText: TextInputEditText) {

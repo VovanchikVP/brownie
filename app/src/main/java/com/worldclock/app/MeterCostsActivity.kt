@@ -208,22 +208,41 @@ class MeterCostsActivity : AppCompatActivity() {
             .create()
         
         // Скрываем фильтр по адресу, так как прибор уже выбран
-        dialogBinding.editTextAddressFilter.let { addressFilter ->
-            // Скрываем TextInputLayout (родительский элемент editTextAddressFilter)
-            val textInputLayout = addressFilter.parent.parent as? com.google.android.material.textfield.TextInputLayout
-            textInputLayout?.visibility = View.GONE
+        // Структура: CardView -> LinearLayout (контент)
+        val cardView = dialogBinding.root as? androidx.cardview.widget.CardView
+        val linearLayout = cardView?.getChildAt(0) as? android.widget.LinearLayout
+        linearLayout?.let { layout ->
+            // Находим TextInputLayout с фильтром по адресу
+            var textInputLayoutIndex = -1
+            for (i in 0 until layout.childCount) {
+                val child = layout.getChildAt(i)
+                if (child is com.google.android.material.textfield.TextInputLayout) {
+                    // Проверяем, содержит ли этот TextInputLayout editTextAddressFilter
+                    val editText = child.findViewById<View>(R.id.editTextAddressFilter)
+                    if (editText != null) {
+                        textInputLayoutIndex = i
+                        break
+                    }
+                }
+            }
             
-            // Скрываем TextView заголовка фильтра (он находится перед TextInputLayout)
-            val linearLayout = dialogBinding.root as? android.widget.LinearLayout
-            linearLayout?.let { layout ->
-                for (i in 0 until layout.childCount) {
+            // Скрываем TextInputLayout с фильтром
+            if (textInputLayoutIndex >= 0) {
+                val textInputLayout = layout.getChildAt(textInputLayoutIndex)
+                if (textInputLayout is com.google.android.material.textfield.TextInputLayout) {
+                    textInputLayout.visibility = View.GONE
+                }
+                
+                // Скрываем TextView заголовка фильтра (он находится прямо перед TextInputLayout)
+                // Ищем TextView на предыдущих позициях
+                for (i in textInputLayoutIndex - 1 downTo 0) {
                     val child = layout.getChildAt(i)
-                    if (child == textInputLayout && i > 0) {
-                        // Скрываем предыдущий TextView (заголовок)
-                        val previousChild = layout.getChildAt(i - 1)
-                        if (previousChild is TextView) {
-                            previousChild.visibility = View.GONE
-                        }
+                    if (child is TextView && child.text != null) {
+                        // Это должен быть заголовок фильтра по адресу
+                        child.visibility = View.GONE
+                        break
+                    } else if (child is android.widget.LinearLayout) {
+                        // Если встретили LinearLayout (например, заголовок диалога), прекращаем поиск
                         break
                     }
                 }
@@ -237,14 +256,58 @@ class MeterCostsActivity : AppCompatActivity() {
         dialogBinding.autoCompleteMeter.isFocusable = false
         dialogBinding.autoCompleteMeter.isClickable = false
         
-        // Скрываем родительский контейнер для выбора прибора (опционально, для упрощения UI)
-        // Можно оставить видимым, чтобы показать, для какого прибора добавляется показание
+        // Скрываем секцию выбора прибора учета, так как прибор уже выбран
+        linearLayout?.let { layout ->
+            // Находим TextInputLayout с выбором прибора (autoCompleteMeter)
+            var meterInputLayoutIndex = -1
+            for (i in 0 until layout.childCount) {
+                val child = layout.getChildAt(i)
+                if (child is com.google.android.material.textfield.TextInputLayout) {
+                    // Проверяем, содержит ли этот TextInputLayout autoCompleteMeter
+                    val autoComplete = child.findViewById<View>(R.id.autoCompleteMeter)
+                    if (autoComplete != null) {
+                        meterInputLayoutIndex = i
+                        break
+                    }
+                }
+            }
+            
+            // Скрываем TextInputLayout с выбором прибора
+            if (meterInputLayoutIndex >= 0) {
+                val meterInputLayout = layout.getChildAt(meterInputLayoutIndex)
+                if (meterInputLayout is com.google.android.material.textfield.TextInputLayout) {
+                    meterInputLayout.visibility = View.GONE
+                }
+                
+                // Скрываем TextView заголовка "Прибор учета" (он находится прямо перед TextInputLayout)
+                // Ищем TextView на предыдущих позициях
+                for (i in meterInputLayoutIndex - 1 downTo 0) {
+                    val child = layout.getChildAt(i)
+                    if (child is TextView && child.text != null) {
+                        // Проверяем, что это заголовок "Прибор учета"
+                        val text = child.text.toString().trim()
+                        if (text.contains("Прибор") || text.contains("прибор")) {
+                            // Это заголовок выбора прибора
+                            child.visibility = View.GONE
+                            break
+                        }
+                    } else if (child is android.widget.LinearLayout || 
+                               child is com.google.android.material.textfield.TextInputLayout) {
+                        // Если встретили другой элемент, прекращаем поиск
+                        break
+                    }
+                }
+            }
+        }
         
         // Устанавливаем текущую дату и время по умолчанию
         val currentDateTime = Calendar.getInstance()
         dialogBinding.editTextReadingDate.setText(dateTimeFormat.format(currentDateTime.time))
         
         setupDateTimePicker(dialogBinding.editTextReadingDate)
+        
+        // Загружаем и отображаем последние показания
+        loadLastReadings(dialogBinding)
         
         dialogBinding.buttonCancel.setOnClickListener {
             dialog.dismiss()
@@ -315,6 +378,40 @@ class MeterCostsActivity : AppCompatActivity() {
                 Toast.makeText(this@MeterCostsActivity, "Ошибка при добавлении: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
+    }
+    
+    private fun loadLastReadings(dialogBinding: com.worldclock.app.databinding.DialogAddReadingBinding) {
+        lifecycleScope.launch {
+            try {
+                val latestReading = repository.getLatestReadingByMeterId(meterId)
+                
+                withContext(Dispatchers.Main) {
+                    val cardLastReadings = dialogBinding.root.findViewById<androidx.cardview.widget.CardView>(R.id.cardLastReadings)
+                    
+                    if (latestReading != null) {
+                        // Показываем карточку с последними показаниями
+                        cardLastReadings?.visibility = View.VISIBLE
+                        
+                        // Отображаем последнее показание
+                        val textLastValue = dialogBinding.root.findViewById<TextView>(R.id.textLastReadingValue)
+                        val textLastDate = dialogBinding.root.findViewById<TextView>(R.id.textLastReadingDate)
+                        textLastValue?.text = String.format("%.2f", latestReading.value)
+                        textLastDate?.text = formatDateShort(latestReading.date)
+                    } else {
+                        // Скрываем карточку, если нет показаний
+                        cardLastReadings?.visibility = View.GONE
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Log.e("MeterCostsActivity", "Error loading last readings", e)
+            }
+        }
+    }
+    
+    private fun formatDateShort(timestamp: Long): String {
+        val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+        return dateFormat.format(Date(timestamp))
     }
     
     private fun setupDateTimePicker(editText: TextInputEditText) {
